@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/style.css">
+  <title>Bantuan - LaporRusDi</title>
+</head>
+<body class="bg-[#F8FAFC] text-slate-800">
+  <div id="navbar" data-active=""></div>
+
+  <main class="max-w-6xl mx-auto px-6 py-12">
+    <h1 class="text-3xl font-extrabold text-[#151E32]">
+      Pusat Bantuan
+    </h1>
+    <p class="text-slate-500 mt-2 mb-8">
+      Panduan menggunakan sistem pelaporan kerusakan fasilitas kampus.
+    </p>
+
+    <div class="grid md:grid-cols-2 gap-5">
+      <section class="card">
+        <h2 class="text-xl font-bold mb-3">Bagaimana cara melapor?</h2>
+        <ol class="list-decimal pl-5 space-y-2 text-slate-600">
+          <li>Masuk ke akun LaporRusDi.</li>
+          <li>Pilih menu Buat Laporan.</li>
+          <li>Isi kategori, lokasi, dan deskripsi kerusakan.</li>
+          <li>Tambahkan foto jika tersedia.</li>
+          <li>Kirim laporan dan pantau statusnya.</li>
+        </ol>
+        <a href="create-report.html"
+          class="btn btn-primary mt-5">Buat Laporan</a>
+      </section>
+
+      <section class="card">
+        <h2 class="text-xl font-bold mb-3">Bagaimana memantau laporan?</h2>
+        <p class="text-slate-600">
+          Buka halaman laporan untuk melihat status yang tersedia.
+          Status dapat mencakup Menunggu, Diverifikasi, Diproses,
+          Selesai, atau Ditolak.
+        </p>
+        <a href="reports.html"
+          class="btn btn-primary mt-5">Lihat Laporan</a>
+      </section>
+
+      <section class="card">
+        <h2 class="text-xl font-bold mb-3">Mengelola profil</h2>
+        <p class="text-slate-600">
+          Buka halaman profil untuk memperbarui nama, email,
+          dan nomor telepon akun.
+        </p>
+        <a href="profile.html"
+          class="btn btn-primary mt-5">Buka Profil</a>
+      </section>
+
+      <section class="card">
+        <h2 class="text-xl font-bold mb-3">Penyimpanan data</h2>
+        <p class="text-slate-600">
+          Versi aplikasi ini menggunakan LocalStorage browser.
+          Data tersimpan pada browser yang digunakan dan bukan
+          otomatis tersinkronisasi dengan perangkat lain.
+        </p>
+      </section>
+    </div>
+
+    <section class="card mt-6">
+      <h2 class="text-xl font-bold mb-3">Butuh bantuan pengujian?</h2>
+      <p class="text-slate-600 mb-4">
+        Gunakan halaman pengujian untuk memeriksa fungsi dasar
+        dan navigasi ant halaman.
+      </p>
+      <a href="page-testing.html" class="btn btn-primary">
+        Buka Pengujian
+      </a>
+    </section>
+  </main>
+
+  <div id="footer"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    renderNavbar();
+    renderFooter();
+  </script>
+</body>
+</html>

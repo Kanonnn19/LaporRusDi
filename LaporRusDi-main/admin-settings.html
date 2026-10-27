@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <title>Pengaturan Admin - LaporRusDi</title>
+</head>
+<body class="bg-[#F8FAFC] text-slate-800">
+  <div class="flex flex-col md:flex-row min-h-screen">
+    <div id="sidebar" data-active="admin-settings.html"></div>
+
+    <main class="flex-1 p-6 md:p-10">
+      <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-extrabold text-[#151E32]">
+          Pengaturan Admin
+        </h1>
+        <p class="text-slate-500 mt-2 mb-8">
+          Kelola kategori kerusakan dan lokasi kampus.
+        </p>
+
+        <section class="card mb-6">
+          <h2 class="text-xl font-bold mb-4">Kategori Kerusakan</h2>
+          <form id="category-form" class="flex flex-wrap gap-3">
+            <input id="category-input" class="form-input flex-1"
+              placeholder="Contoh: AC, Listrik, Air" required>
+            <button class="btn btn-primary" type="submit">
+              Tambah
+            </button>
+          </form>
+          <ul id="category-list" class="mt-5 space-y-3"></ul>
+        </section>
+
+        <section class="card">
+          <h2 class="text-xl font-bold mb-4">Lokasi Kampus</h2>
+          <form id="location-form" class="flex flex-wrap gap-3">
+            <input id="location-input" class="form-input flex-1"
+              placeholder="Contoh: Gedung A, Lantai 2" required>
+            <button class="btn btn-primary" type="submit">
+              Tambah
+            </button>
+          </form>
+          <ul id="location-list" class="mt-5 space-y-3"></ul>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    var user = getCurrentUser();
+
+    if (!user) {
+      window.location.href = "login.html";
+    } else if (user.role !== "admin") {
+      window.location.href = getDashboardPage(user.role);
+    } else {
+      renderSidebar();
+
+      var categoryKey = "laporrusdi_categories";
+      var locationKey = "laporrusdi_locations";
+
+      function readList(key) {
+        try {
+          var value = JSON.parse(localStorage.getItem(key) || "[]");
+          return Array.isArray(value) ? value : [];
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function drawList(key, elementId) {
+        var items = readList(key);
+        var list = document.getElementById(elementId);
+        list.innerHTML = "";
+
+        if (items.length === 0) {
+          list.innerHTML =
+            '<li class="text-slate-500 text-sm">Belum ada data.</li>';
+          return;
+        }
+
+        items.forEach(function(item, index) {
+          var li = document.createElement("li");
+          li.className =
+            "flex items-center justify-between gap-3 border rounded-lg p-3";
+
+          var span = document.createElement("span");
+          span.textContent = item;
+
+          var button = document.createElement("button");
+          button.type = "button";
+          button.className = "btn btn-danger";
+          button.textContent = "Hapus";
+
+          button.addEventListener("click", function() {
+            if (!confirm("Hapus data " + item + "?")) return;
+
+            var updated = readList(key);
+            updated.splice(index, 1);
+            localStorage.setItem(key, JSON.stringify(updated));
+            drawList(key, elementId);
+            showToast("Data berhasil dihapus.", "success");
+          });
+
+          li.append(span, button);
+          list.appendChild(li);
+        });
+      }
+
+      function addItem(key, inputId, listId) {
+        var input = document.getElementById(inputId);
+        var value = input.value.trim();
+
+        if (!value) return;
+
+        var items = readList(key);
+        var exists = items.some(function(item) {
+          return item.toLowerCase() === value.toLowerCase();
+        });
+
+        if (exists) {
+          showToast("Data tersebut sudah ada.", "error");
+          return;
+        }
+
+        items.push(value);
+        localStorage.setItem(key, JSON.stringify(items));
+        input.value = "";
+        drawList(key, listId);
+        showToast("Data berhasil ditambahkan.", "success");
+      }
+
+      document.getElementById("category-form")
+        .addEventListener("submit", function(e) {
+          e.preventDefault();
+          addItem(categoryKey, "category-input", "category-list");
+        });
+
+      document.getElementById("location-form")
+        .addEventListener("submit", function(e) {
+          e.preventDefault();
+          addItem(locationKey, "location-input", "location-list");
+        });
+
+      drawList(categoryKey, "category-list");
+      drawList(locationKey, "location-list");
+    }
+
+    if (window.lucide) lucide.createIcons();
+  </script>
+</body>
+</html>

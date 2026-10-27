@@ -1,0 +1,143 @@
+/* ===== LAPOR RUSDI - CSS GLOBAL (dipakai semua halaman) ===== */
+:root {
+  --navy: #151E32;
+  --navy-dark: #111827;
+  --blue: #3B82F6;
+  --blue-hover: #2563EB;
+  --slate: #94A3B8;
+  --light-bg: #F8FAFC;
+  --menunggu: #EAB308;
+  --diverifikasi: #60A5FA;
+  --diproses: #3B82F6;
+  --selesai: #22C55E;
+  --ditolak: #EF4444;
+}
+body { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; }
+html { scroll-behavior: smooth; }
+
+/* ----- Tombol ----- */
+.btn { display: inline-block; padding: 12px 24px; border-radius: 8px; font-weight: 700;
+       cursor: pointer; border: 2px solid transparent; transition: background .2s; text-align: center; }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover { background: var(--blue-hover); }
+.btn-outline { border-color: var(--blue); color: #fff; background: transparent; }
+.btn-outline:hover { background: rgba(59,130,246,.15); }
+.btn-danger { background: var(--ditolak); color: #fff; }
+
+/* ----- Kartu & Form ----- */
+.card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(15,23,42,.08); }
+.form-label { display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 6px; }
+.form-input { width: 100%; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px;
+              font-size: 15px; background: #fff; color: #0F172A; box-sizing: border-box; }
+.form-input:focus { outline: 2px solid var(--blue); border-color: var(--blue); }
+.form-input.error { border-color: var(--ditolak); }
+.form-error { color: var(--ditolak); font-size: 13px; margin-top: 4px; min-height: 18px; }
+
+/* ----- Badge status & prioritas ----- */
+.badge { display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.badge-menunggu     { background: #FEF3C7; color: #92400E; }
+.badge-diverifikasi { background: #DBEAFE; color: #1E40AF; }
+.badge-diproses     { background: #DBEAFE; color: #1D4ED8; }
+.badge-selesai      { background: #DCFCE7; color: #166534; }
+.badge-ditolak      { background: #FEE2E2; color: #991B1B; }
+.badge-rendah  { background: #F1F5F9; color: #475569; }
+.badge-sedang  { background: #FEF9C3; color: #854D0E; }
+.badge-tinggi  { background: #FFEDD5; color: #9A3412; }
+.badge-darurat { background: #FEE2E2; color: #991B1B; }
+
+/* ----- Navbar publik & sidebar dashboard ----- */
+.nav-link { color: #CBD5E1; font-weight: 500; }
+.nav-link:hover, .nav-link.active { color: var(--blue); }
+.sidebar { background: var(--navy); width: 250px; min-height: 100vh; color: #fff; padding: 24px 16px; }
+.sidebar a { display: block; padding: 10px 14px; border-radius: 8px; color: var(--slate); margin-bottom: 4px; }
+.sidebar a:hover { background: rgba(255,255,255,.07); color: #fff; }
+.sidebar a.active { background: var(--blue); color: #fff; }
+
+/* ----- Hero: kartu laporan miring ----- */
+.hero-card { background: #fff; border-radius: 14px; padding: 24px 28px; margin-bottom: 14px;
+             border-left: 8px solid var(--blue); box-shadow: 0 10px 25px rgba(0,0,0,.35); }
+.hero-card.menunggu { border-left-color: var(--menunggu); transform: rotate(-2deg); }
+.hero-card.selesai  { border-left-color: var(--selesai);  transform: rotate(1.5deg); margin-left: 30px; }
+.progress-line { height: 4px; background: #E2E8F0; border-radius: 4px; position: relative; margin: 18px 0 8px; }
+.progress-line div { height: 4px; background: var(--blue); width: 50%; border-radius: 4px; position: relative; }
+/* Tiga titik progres: kiri (biru), tengah (biru, ujung garis biru), kanan (abu) */
+.progress-line::before, .progress-line::after, .progress-line div::after {
+  content: ''; position: absolute; top: -8px; width: 20px; height: 20px; border-radius: 50%; }
+.progress-line::before { left: 0; background: var(--blue); z-index: 1; }
+.progress-line::after { right: 0; background: #CBD5E1; }
+.progress-line div::after { right: -10px; background: var(--blue); }
+.chip { background: #fff; color: #0F172A; padding: 8px 16px; border-radius: 999px; font-size: 16px; }
+
+/* ----- Toast (pesan berhasil/gagal) ----- */
+#toast-box { position: fixed; top: 20px; right: 20px; z-index: 100; }
+.toast { padding: 12px 20px; border-radius: 8px; color: #fff; margin-bottom: 10px; font-weight: 600;
+         box-shadow: 0 4px 12px rgba(0,0,0,.25); }
+.toast-success { background: #16A34A; }
+.toast-error   { background: #DC2626; }
+.toast-info    { background: var(--blue); }
+
+/* ----- Modal konfirmasi ----- */
+.modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex;
+            align-items: center; justify-content: center; z-index: 90; }
+.modal-box { background: #fff; border-radius: 12px; padding: 24px; max-width: 400px; width: 90%; }
+.empty-state { text-align: center; padding: 40px 16px; color: #64748B; }
+
+/* ===== LEBAR HALAMAN =====
+   Container dilebarkan jadi 1448px (isi 1400px + padding 24px).
+   Ditulis di sini (CSS biasa) supaya pasti berlaku walau tailwind.css belum dibangun ulang. */
+.max-w-6xl { max-width: 1448px; }
+
+/* ===== NAVBAR PUBLIK ===== */
+.navbar { background: #151E32; border-bottom: 1px solid rgba(51,65,85,.5); position: relative; }
+.navbar-inner { height: 78px; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { font-size: 24px; font-weight: 800; color: #fff; }
+.nav-logo span { color: var(--blue); }
+.nav-menu { display: none; gap: 24px; font-size: 16px; font-weight: 500; }
+.nav-right { display: none; align-items: center; gap: 20px; font-size: 16px; }
+.nav-login { color: #fff; font-weight: 700; }
+.nav-burger { color: #fff; padding: 8px; background: none; border: 0; cursor: pointer; }
+.btn-sm { padding: 10px 20px; }
+.menu-mobile { display: none; background: #151E32; padding: 0 24px 24px; position: absolute;
+               left: 0; right: 0; z-index: 50; box-shadow: 0 10px 15px rgba(0,0,0,.3); }
+.menu-mobile.open { display: block; }
+.menu-mobile .nav-link { display: block; padding: 12px 0; border-bottom: 1px solid rgba(51,65,85,.5); }
+.menu-mobile-actions { margin-top: 16px; }
+.menu-mobile-actions .btn { display: block; width: 100%; margin-top: 8px; }
+@media (min-width: 1024px) {
+  .nav-menu { display: flex; }
+  .nav-right { display: flex; }
+  .nav-burger { display: none; }
+  .menu-mobile, .menu-mobile.open { display: none; }
+}
+@media (min-width: 1280px) {
+  .nav-menu { gap: 40px; font-size: 18px; }
+  .nav-right { gap: 32px; font-size: 18px; }
+}
+
+/* ===== HERO BERANDA ===== */
+.hero { background: #111C34; color: #fff; padding-bottom: 128px; }
+.hero-grid { display: grid; grid-template-columns: 1fr; gap: 48px; align-items: center; padding-top: 80px; }
+.hero-title { font-size: 40px; line-height: 1.15; font-weight: 800; }
+.hero-desc { font-size: 18px; line-height: 1.75; color: #CBD5E1; margin-top: 24px; max-width: 576px; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 40px; }
+.btn-lg { padding: 18px 30px; font-size: 18px; }
+.hero-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 32px;
+             font-size: 16px; color: #94A3B8; }
+.hero-card-title { font-weight: 700; font-size: 18px; color: var(--navy); margin-top: 4px; }
+.hero-card-title.besar { font-size: 21px; }
+@media (min-width: 768px) {
+  .hero-grid { grid-template-columns: 1fr 1fr; padding-top: 96px; }
+  .hero-title { font-size: 60px; }
+  .hero-desc { font-size: 20px; }
+}
+@media (min-width: 1280px) {
+  .hero-grid { grid-template-columns: 3fr 2fr; }
+  .hero-title { font-size: 72px; }
+}
+
+/* ===== STATISTIK (menimpa bagian bawah hero) ===== */
+.stats-overlap { margin-top: -48px; position: relative; }
+.stat-icon { width: 36px; height: 36px; flex-shrink: 0; }
+.icon-blue { color: #3B82F6; }
+.icon-yellow { color: #EAB308; }
+.icon-green { color: #22C55E; }
