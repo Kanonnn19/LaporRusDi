@@ -124,9 +124,15 @@ function renderNavbar() {
   if (box === null) { return; }
   var active = box.getAttribute("data-active");
   var user = getCurrentUser();
-  var menu = [["home", "index.html", "Home"], ["tentang", "index.html#tentang", "Tentang"], ["cara", "index.html#cara-kerja", "Cara Kerja"],
-              ["laporan", "reports.html", "Laporan"], ["buat", "create-report.html", "Buat Laporan"]];
-
+  var menu = [
+    ["home", "index.html", "Home"],
+    ["tentang", "index.html#tentang", "Tentang"],
+    ["cara", "index.html#cara-kerja", "Cara Kerja"],
+    ["laporan", "reports.html", "Laporan"],
+    ["buat", "create-report.html", "Buat Laporan"],
+    ["bantuan", "help.html", "Bantuan"]
+  ];
+  
   var linksDesktop = "";
   var linksMobile = "";
   for (var i = 0; i < menu.length; i++) {
@@ -176,7 +182,15 @@ function renderSidebar() {
   if (box === null || user === null) { return; }
   var menus = {
     pelapor: [["user-dashboard.html", "Dashboard"], ["create-report.html", "Buat Laporan"], ["reports.html", "Laporan Saya"], ["notifications.html", "Notifikasi"], ["profile.html", "Profil"]],
-    admin: [["admin-dashboard.html", "Dashboard"], ["admin-reports.html", "Kelola Laporan"], ["admin-technicians.html", "Teknisi"], ["admin-settings.html", "Kategori & Lokasi"], ["profile.html", "Profil"]],
+    admin: [
+      ["admin-dashboard.html", "Dashboard"],
+      ["admin-reports.html", "Kelola Laporan"],
+      ["admin-technicians.html", "Teknisi"],
+      ["admin-settings.html", "Kategori & Lokasi"],
+      ["profile.html", "Profil"],
+      ["page-testing.html", "Pengujian"],
+      ["help.html", "Bantuan"]
+    ],
     teknisi: [["technician-dashboard.html", "Dashboard"], ["profile.html", "Profil"]]
   };
   var active = box.getAttribute("data-active");
