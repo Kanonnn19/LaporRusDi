@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <title>Lapor RusDi - Lapor Kerusakan, Ditindaklanjuti</title>
+</head>
+<body class="bg-white text-slate-800">
+  <div id="navbar" data-active="home"></div>
+
+  <!-- ===== HERO (gaya ada di css/style.css bagian HERO BERANDA) ===== -->
+  <section class="hero">
+    <div class="hero-grid max-w-6xl mx-auto px-6">
+      <div>
+        <h1 class="hero-title">Rusak di kampus? Lapor, lalu pantau sampai beres.</h1>
+        <p class="hero-desc">Kirim laporan kerusakan fasilitas dalam beberapa menit. Admin Sarpras memprosesnya, dan kamu bisa melihat statusnya kapan saja.</p>
+        <div class="hero-actions">
+          <a href="create-report.html" class="btn btn-primary btn-lg">Buat Laporan</a>
+          <a href="reports.html" class="btn btn-outline btn-lg">Lihat Semua Laporan</a>
+        </div>
+        <div class="hero-tags">
+          <span>Yang bisa dilaporkan:</span>
+          <span class="chip">AC</span><span class="chip">Listrik</span><span class="chip">Air</span>
+          <span class="chip">Furnitur</span><span class="chip">Bangunan</span>
+        </div>
+      </div>
+      <div>
+        <div class="hero-card menunggu">
+          <div class="flex justify-between"><span class="text-slate-500 text-sm">LRD-0243</span><span class="badge badge-menunggu">Menunggu</span></div>
+          <p class="hero-card-title">Lampu koridor lantai 1 mati</p>
+        </div>
+        <div class="hero-card">
+          <div class="flex justify-between"><span class="text-slate-500 text-sm">LRD-0241</span><span class="badge badge-diproses">Diproses</span></div>
+          <p class="hero-card-title besar">AC Ruang B.204 tidak dingin</p>
+          <p class="text-slate-500 text-sm">Gedung B, Lantai 2</p>
+          <div class="progress-line"><div></div></div>
+          <div class="flex justify-between text-xs text-slate-400"><span>Diterima</span><span>Diproses</span><span>Selesai</span></div>
+        </div>
+        <div class="hero-card selesai">
+          <div class="flex justify-between"><span class="text-slate-500 text-sm">LRD-0236</span><span class="badge badge-selesai">Selesai</span></div>
+          <p class="hero-card-title">Keran wastafel toilet bocor</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== STATISTIK (menimpa bagian bawah hero) ===== -->
+  <section class="stats-overlap max-w-6xl mx-auto px-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="card flex items-center gap-4"><i data-lucide="clipboard-list" class="stat-icon icon-blue"></i>
+        <div><p id="stat-total" class="text-3xl font-extrabold text-[#151E32]">0</p><p class="text-slate-500 text-sm">Total laporan</p></div></div>
+      <div class="card flex items-center gap-4"><i data-lucide="hourglass" class="stat-icon icon-yellow"></i>
+        <div><p id="stat-menunggu" class="text-3xl font-extrabold text-[#151E32]">0</p><p class="text-slate-500 text-sm">Menunggu</p></div></div>
+      <div class="card flex items-center gap-4"><i data-lucide="wrench" class="stat-icon icon-blue"></i>
+        <div><p id="stat-proses" class="text-3xl font-extrabold text-[#151E32]">0</p><p class="text-slate-500 text-sm">Sedang diproses</p></div></div>
+      <div class="card flex items-center gap-4"><i data-lucide="circle-check" class="stat-icon icon-green"></i>
+        <div><p id="stat-selesai" class="text-3xl font-extrabold text-[#151E32]">0</p><p class="text-slate-500 text-sm">Sudah selesai</p></div></div>
+    </div>
+  </section>
+
+  <!-- ===== CARA KERJA ===== -->
+  <section id="cara-kerja" class="py-20">
+    <div class="max-w-6xl mx-auto px-6">
+      <h2 class="text-3xl font-extrabold text-[#151E32]">Dari laporan sampai perbaikan selesai</h2>
+      <p class="text-slate-500 mt-2 max-w-xl">Setiap laporan melewati empat tahap yang bisa kamu lihat langsung di halaman detail.</p>
+      <div class="grid md:grid-cols-4 gap-6 mt-10">
+        <div><div class="w-12 h-12 rounded-xl bg-[#3B82F6] text-white flex items-center justify-center"><i data-lucide="file-pen-line"></i></div>
+          <h3 class="font-bold mt-4">Buat laporan</h3><p class="text-slate-500 text-sm mt-1">Isi lokasi, deskripsi, dan foto bukti kerusakan.</p></div>
+        <div><div class="w-12 h-12 rounded-xl bg-[#3B82F6] text-white flex items-center justify-center"><i data-lucide="shield-check"></i></div>
+          <h3 class="font-bold mt-4">Admin verifikasi</h3><p class="text-slate-500 text-sm mt-1">Admin memeriksa laporan dan menentukan prioritas.</p></div>
+        <div><div class="w-12 h-12 rounded-xl bg-[#3B82F6] text-white flex items-center justify-center"><i data-lucide="hard-hat"></i></div>
+          <h3 class="font-bold mt-4">Teknisi memperbaiki</h3><p class="text-slate-500 text-sm mt-1">Teknisi ditugaskan dan memperbarui progres kerja.</p></div>
+        <div><div class="w-12 h-12 rounded-xl bg-[#22C55E] text-white flex items-center justify-center"><i data-lucide="party-popper"></i></div>
+          <h3 class="font-bold mt-4">Selesai</h3><p class="text-slate-500 text-sm mt-1">Kamu mendapat notifikasi, lengkap dengan foto hasil.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FITUR ===== -->
+  <section id="fitur" class="bg-[#F8FAFC] py-20">
+    <div class="max-w-6xl mx-auto px-6">
+      <h2 class="text-3xl font-extrabold text-[#151E32]">Yang bisa kamu lakukan</h2>
+      <div class="grid md:grid-cols-3 gap-5 mt-10">
+        <div class="card"><i data-lucide="camera" class="text-[#3B82F6]"></i><h3 class="font-bold mt-3">Lampirkan foto bukti</h3><p class="text-slate-500 text-sm mt-1">Foto kerusakan membantu teknisi menyiapkan alat yang tepat.</p></div>
+        <div class="card"><i data-lucide="activity" class="text-[#3B82F6]"></i><h3 class="font-bold mt-3">Pantau status</h3><p class="text-slate-500 text-sm mt-1">Riwayat status tampil sebagai timeline di setiap laporan.</p></div>
+        <div class="card"><i data-lucide="thumbs-up" class="text-[#3B82F6]"></i><h3 class="font-bold mt-3">Dukung laporan sama</h3><p class="text-slate-500 text-sm mt-1">Ikut mengalami hal yang sama? Tekan dukungan, tidak perlu lapor ulang.</p></div>
+        <div class="card"><i data-lucide="message-square" class="text-[#3B82F6]"></i><h3 class="font-bold mt-3">Komentar</h3><p class="text-slate-500 text-sm mt-1">Tambahkan info di laporan agar penanganan lebih cepat.</p></div>
+        <div class="card"><i data-lucide="bell" class="text-[#3B82F6]"></i><h3 class="font-bold mt-3">Notifikasi</h3><p class="text-slate-500 text-sm mt-1">Dapat kabar saat laporan diverifikasi, diproses, atau selesai.</p></div>
+        <div class="card"><i data-lucide="calendar-clock" class="text-[#3B82F6]"></i><h3 class="font-bold mt-3">Jadwal perbaikan</h3><p class="text-slate-500 text-sm mt-1">Lihat teknisi yang ditugaskan dan kapan perbaikan dilakukan.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== LAPORAN TERBARU (dari LocalStorage) ===== -->
+  <section class="py-20">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="flex justify-between items-end">
+        <h2 class="text-3xl font-extrabold text-[#151E32]">Laporan terbaru</h2>
+        <a href="reports.html" class="text-[#3B82F6] font-semibold">Lihat semua</a>
+      </div>
+      <div id="recent-list" class="grid md:grid-cols-2 gap-4 mt-8"></div>
+    </div>
+  </section>
+
+  <!-- ===== KATEGORI ===== -->
+  <section class="bg-[#F8FAFC] py-20">
+    <div class="max-w-6xl mx-auto px-6">
+      <h2 class="text-3xl font-extrabold text-[#151E32]">Kerusakan apa yang bisa dilaporkan?</h2>
+      <p class="text-slate-500 mt-2">Angka menunjukkan jumlah laporan di tiap kategori.</p>
+      <div id="category-list" class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8"></div>
+    </div>
+  </section>
+
+  <!-- ===== UNTUK SIAPA ===== -->
+  <section id="tentang" class="bg-[#151E32] text-white py-20">
+    <div class="max-w-6xl mx-auto px-6">
+      <h2 class="text-3xl font-extrabold">Satu website, tiga peran</h2>
+      <div class="grid md:grid-cols-3 gap-5 mt-10">
+        <div class="border border-slate-600 rounded-xl p-6"><i data-lucide="user" class="text-[#3B82F6]"></i>
+          <h3 class="font-bold text-lg mt-3">Pelapor</h3><p class="text-slate-400 text-sm mt-1">Mahasiswa dan dosen yang membuat laporan, mendukung, dan memantau perkembangannya.</p></div>
+        <div class="border border-slate-600 rounded-xl p-6"><i data-lucide="layout-dashboard" class="text-[#3B82F6]"></i>
+          <h3 class="font-bold text-lg mt-3">Admin Sarpras</h3><p class="text-slate-400 text-sm mt-1">Memverifikasi laporan, menentukan prioritas, dan menugaskan teknisi.</p></div>
+        <div class="border border-slate-600 rounded-xl p-6"><i data-lucide="hard-hat" class="text-[#3B82F6]"></i>
+          <h3 class="font-bold text-lg mt-3">Teknisi</h3><p class="text-slate-400 text-sm mt-1">Menerima tugas, memperbarui progres, dan mengunggah foto sebelum dan sesudah perbaikan.</p></div>
+      </div>
+      <p class="text-slate-400 text-sm mt-6">Mau mencoba semua peran? <a href="login.html" class="text-[#3B82F6] font-semibold">Masuk dengan akun demo</a>.</p>
+    </div>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section id="faq" class="py-20">
+    <div class="max-w-3xl mx-auto px-6">
+      <h2 class="text-3xl font-extrabold text-[#151E32]">Pertanyaan umum</h2>
+      <div class="mt-8 flex flex-col gap-3">
+        <details class="card border border-slate-100"><summary class="font-semibold cursor-pointer">Apakah saya harus punya akun untuk melapor?</summary><p class="text-slate-500 text-sm mt-3">Ya. Daftar dulu agar laporanmu tercatat dan kamu menerima notifikasi.</p></details>
+        <details class="card border border-slate-100"><summary class="font-semibold cursor-pointer">Berapa lama laporan diproses?</summary><p class="text-slate-500 text-sm mt-3">Tergantung prioritas. Laporan berstatus Darurat ditangani lebih dulu.</p></details>
+        <details class="card border border-slate-100"><summary class="font-semibold cursor-pointer">Bagaimana jika laporan saya ditolak?</summary><p class="text-slate-500 text-sm mt-3">Admin menuliskan alasannya di halaman detail dan di notifikasi. Kamu bisa membuat laporan baru dengan informasi yang lebih lengkap.</p></details>
+        <details class="card border border-slate-100"><summary class="font-semibold cursor-pointer">Apakah data saya tersimpan di server?</summary><p class="text-slate-500 text-sm mt-3">Belum. Versi ini simulasi frontend, datanya disimpan di LocalStorage browser dan hanya terlihat di perangkat ini.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== AJAKAN ===== -->
+  <section class="bg-[#151E32] py-16 text-center text-white px-6">
+    <h2 class="text-3xl font-extrabold">Lihat sesuatu yang rusak?</h2>
+    <p class="text-slate-300 mt-3">Satu laporan darimu membantu seluruh civitas kampus.</p>
+    <a href="create-report.html" class="btn btn-primary mt-6">Buat Laporan Sekarang</a>
+  </section>
+
+  <div id="footer"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    var reports = getData(KEYS.reports);
+
+    // 1. Hitung statistik
+    var menunggu = 0, diproses = 0, selesai = 0;
+    for (var i = 0; i < reports.length; i++) {
+      if (reports[i].status === "Menunggu") { menunggu++; }
+      if (reports[i].status === "Diproses") { diproses++; }
+      if (reports[i].status === "Selesai") { selesai++; }
+    }
+    document.querySelector("#stat-total").textContent = reports.length;
+    document.querySelector("#stat-menunggu").textContent = menunggu;
+    document.querySelector("#stat-proses").textContent = diproses;
+    document.querySelector("#stat-selesai").textContent = selesai;
+
+    // 2. Laporan terbaru (urutkan ID terbesar dulu, ambil 4)
+    var urut = reports.slice();
+    urut.sort(function (a, b) { return a.id < b.id ? 1 : -1; });
+    var html = "";
+    for (var j = 0; j < urut.length && j < 4; j++) {
+      var r = urut[j];
+      html += '<a href="report-detail.html?id=' + r.id + '" class="card border border-slate-100 hover:border-[#3B82F6] block">' +
+        '<div class="flex justify-between items-center"><span class="text-slate-400 text-sm">' + r.id + '</span>' + statusBadge(r.status) + '</div>' +
+        '<p class="font-bold text-[#151E32] mt-1">' + escapeHtml(r.title) + '</p>' +
+        '<p class="text-slate-500 text-sm mt-1">' + escapeHtml(r.building) + ', ' + escapeHtml(r.room) + ' - ' + formatDate(r.date) + '</p></a>';
+    }
+    if (html === "") { html = '<div class="empty-state md:col-span-2">Belum ada laporan. Jadilah yang pertama melapor.</div>'; }
+    document.querySelector("#recent-list").innerHTML = html;
+
+    // 3. Kartu kategori + jumlah laporan
+    var icons = { "AC": "snowflake", "Listrik": "zap", "Air": "droplets", "Furnitur": "armchair",
+                  "Bangunan": "building-2", "Jaringan": "wifi", "Peralatan Lab": "flask-conical" };
+    var categories = getData(KEYS.categories);
+    var html2 = "";
+    for (var k = 0; k < categories.length; k++) {
+      var jumlah = 0;
+      for (var m = 0; m < reports.length; m++) {
+        if (reports[m].category === categories[k]) { jumlah++; }
+      }
+      var ikon = icons[categories[k]] || "wrench";
+      html2 += '<a href="reports.html" class="card border border-slate-100 hover:border-[#3B82F6] flex items-center gap-3">' +
+        '<i data-lucide="' + ikon + '" class="text-[#3B82F6]"></i>' +
+        '<span class="font-semibold text-[#151E32] flex-1">' + escapeHtml(categories[k]) + '</span>' +
+        '<span class="text-slate-400 text-sm">' + jumlah + '</span></a>';
+    }
+    document.querySelector("#category-list").innerHTML = html2;
+
+    // 4. Tampilkan semua ikon Lucide (dipanggil terakhir)
+    lucide.createIcons();
+  </script>
+</body>
+</html>
