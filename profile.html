@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <title>Profil - LaporRusDi</title>
+</head>
+<body class="bg-[#F8FAFC] text-slate-800">
+  <div class="flex flex-col md:flex-row min-h-screen">
+    <div id="sidebar" data-active="profile.html"></div>
+
+    <main class="flex-1 p-6 md:p-10">
+      <div class="max-w-3xl mx-auto">
+        <h1 class="text-3xl font-extrabold text-[#151E32]">
+          Profil Saya
+        </h1>
+        <p class="text-slate-500 mt-2 mb-8">
+          Kelola informasi akun LaporRusDi kamu.
+        </p>
+
+        <form id="profile-form" class="card space-y-5">
+          <div>
+            <label class="form-label" for="name">Nama lengkap</label>
+            <input id="name" class="form-input" required>
+          </div>
+
+          <div>
+            <label class="form-label" for="email">Email</label>
+            <input id="email" type="email" class="form-input" required>
+          </div>
+
+          <div>
+            <label class="form-label" for="phone">Nomor telepon</label>
+            <input id="phone" type="tel" class="form-input"
+              placeholder="Masukkan nomor telepon">
+          </div>
+
+          <div>
+            <label class="form-label" for="role">Peran akun</label>
+            <input id="role" class="form-input" disabled>
+          </div>
+
+          <button type="submit" class="btn btn-primary">
+            Simpan Perubahan
+          </button>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    var user = getCurrentUser();
+
+    if (!user) {
+      window.location.href = "login.html";
+    } else {
+      renderSidebar();
+
+      document.getElementById("name").value = user.name || "";
+      document.getElementById("email").value = user.email || "";
+      document.getElementById("phone").value = user.phone || "";
+      document.getElementById("role").value = user.role || "";
+
+      document.getElementById("profile-form")
+        .addEventListener("submit", function(e) {
+          e.preventDefault();
+
+          var users = getData(KEYS.users);
+          var current = getCurrentUser();
+
+          if (!current) {
+            window.location.href = "login.html";
+            return;
+          }
+
+          var name = document.getElementById("name").value.trim();
+          var email = document.getElementById("email").value.trim();
+          var phone = document.getElementById("phone").value.trim();
+
+          if (!name || !email) {
+            showToast("Nama dan email wajib diisi.", "error");
+            return;
+          }
+
+          var emailExists = users.some(function(u) {
+            return u.id !== current.id &&
+              (u.email || "").toLowerCase() === email.toLowerCase();
+          });
+
+          if (emailExists) {
+            showToast("Email sudah digunakan akun lain.", "error");
+            return;
+          }
+
+          var index = users.findIndex(function(u) {
+            return u.id === current.id;
+          });
+
+          if (index === -1) {
+            showToast("Data pengguna tidak ditemukan.", "error");
+            return;
+          }
+
+          users[index].name = name;
+          users[index].email = email;
+          users[index].phone = phone;
+
+          saveData(KEYS.users, users);
+          showToast("Profil berhasil diperbarui.", "success");
+          renderSidebar();
+        });
+    }
+
+    if (window.lucide) lucide.createIcons();
+  </script>
+</body>
+</html>

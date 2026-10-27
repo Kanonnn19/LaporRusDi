@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/style.css">
+  <title>Pengujian Sistem - LaporRusDi</title>
+</head>
+<body class="bg-[#F8FAFC] text-slate-800">
+  <div id="navbar"></div>
+
+  <main class="max-w-6xl mx-auto px-6 py-12">
+    <h1 class="text-3xl font-extrabold text-[#151E32]">
+      Pengujian Lintas Halaman
+    </h1>
+    <p class="text-slate-500 mt-2 mb-8">
+      Pemeriksaan dasar fungsi dan navigasi LaporRusDi.
+    </p>
+
+    <section class="card mb-6">
+      <div class="flex flex-wrap justify-between items-center gap-4">
+        <h2 class="text-xl font-bold">Hasil Pengujian Otomatis</h2>
+        <button id="run-test" class="btn btn-primary">
+          Jalankan Pengujian
+        </button>
+      </div>
+      <p id="test-summary" class="text-slate-500 mt-4">
+        Klik tombol untuk memulai pengujian.
+      </p>
+      <ul id="test-results" class="mt-4 space-y-3"></ul>
+    </section>
+
+    <section class="card">
+      <h2 class="text-xl font-bold mb-4">Checklist Manual</h2>
+      <p class="text-slate-500 mb-4">
+        Centang setiap fitur setelah selesai diperiksa.
+      </p>
+
+      <div class="space-y-4">
+        <label class="flex gap-3 items-start">
+          <input type="checkbox" class="test-check mt-1">
+          <span>Beranda dapat dibuka dan statistik tampil.</span>
+        </label>
+        <label class="flex gap-3 items-start">
+          <input type="checkbox" class="test-check mt-1">
+          <span>Registrasi, login, dan logout berfungsi.</span>
+        </label>
+        <label class="flex gap-3 items-start">
+          <input type="checkbox" class="test-check mt-1">
+          <span>Pengguna dapat membuat dan melihat laporan.</span>
+        </label>
+        <label class="flex gap-3 items-start">
+          <input type="checkbox" class="test-check mt-1">
+          <span>Profil dapat diedit dan disimpan.</span>
+        </label>
+        <label class="flex gap-3 items-start">
+          <input type="checkbox" class="test-check mt-1">
+          <span>Admin dapat mengelola kategori dan lokasi.</span>
+        </label>
+        <label class="flex gap-3 items-start">
+          <input type="checkbox" class="test-check mt-1">
+          <span>Halaman dapat digunakan pada layar HP.</span>
+        </label>
+      </div>
+
+      <p id="check-summary" class="text-slate-500 mt-5">
+        Checklist selesai: 0 dari 6.
+      </p>
+    </section>
+  </main>
+
+  <div id="footer"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    renderNavbar();
+    renderFooter();
+
+    var testPages = [
+      "index.html",
+      "login.html",
+      "register.html",
+      "reports.html",
+      "create-report.html",
+      "profile.html",
+      "admin-settings.html",
+      "help.html"
+    ];
+
+    function addResult(name, passed, detail) {
+      var li = document.createElement("li");
+      li.className = "border rounded-lg p-4";
+
+      var title = document.createElement("p");
+      title.className = passed
+        ? "font-bold text-green-700"
+        : "font-bold text-red-600";
+      title.textContent = (passed ? "LULUS — " : "GAGAL — ") + name;
+
+      var desc = document.createElement("p");
+      desc.className = "text-sm text-slate-500 mt-1";
+      desc.textContent = detail;
+
+      li.append(title, desc);
+      document.getElementById("test-results").appendChild(li);
+    }
+
+    async function runTests() {
+      var results = document.getElementById("test-results");
+      var summary = document.getElementById("test-summary");
+      var passed = 0;
+      var total = 0;
+
+      results.innerHTML = "";
+      summary.textContent = "Pengujian sedang berjalan...";
+
+      function check(name, condition, detail) {
+        total++;
+        if (condition) passed++;
+        addResult(name, condition, detail);
+      }
+
+      check(
+        "LocalStorage tersedia",
+        typeof localStorage !== "undefined",
+        "Memeriksa penyimpanan browser."
+      );
+
+      check(
+        "Fungsi umum tersedia",
+        typeof getData === "function" &&
+        typeof saveData === "function" &&
+        typeof getCurrentUser === "function",
+        "Memeriksa helper dari common.js."
+      );
+
+      check(
+        "Konfigurasi data tersedia",
+        typeof KEYS !== "undefined" &&
+        !!KEYS.users && !!KEYS.reports,
+        "Memeriksa KEYS.users dan KEYS.reports."
+      );
+
+      var storageValid = true;
+
+      try {
+        if (typeof KEYS !== "undefined") {
+          getData(KEYS.users);
+          getData(KEYS.reports);
+        }
+      } catch (e) {
+        storageValid = false;
+      }
+
+      check(
+        "Data dapat dibaca",
+        storageValid,
+        storageValid
+          ? "Data pengguna dan laporan dapat dibaca."
+          : "Periksa isi LocalStorage dan format JSON."
+      );
+
+      for (var page of testPages) {
+        var exists = false;
+        var detail = "";
+
+        try {
+          var response = await fetch(page, { method: "HEAD" });
+          exists = response.ok;
+          detail = exists
+            ? "Halaman dapat dijangkau."
+            : "HTTP " + response.status;
+        } catch (e) {
+          detail = "Tidak dapat diperiksa. Jalankan melalui Live Server.";
+        }
+
+        check("Halaman " + page, exists, detail);
+      }
+
+      summary.textContent =
+        "Hasil: " + passed + " dari " + total +
+        " pemeriksaan lulus.";
+    }
+
+    document.getElementById("run-test")
+      .addEventListener("click", runTests);
+
+    document.querySelectorAll(".test-check")
+      .forEach(function(item) {
+        item.addEventListener("change", function() {
+          var all = document.querySelectorAll(".test-check");
+          var done = document.querySelectorAll(
+            ".test-check:checked"
+          ).length;
+
+          document.getElementById("check-summary").textContent =
+            "Checklist selesai: " + done + " dari " + all.length + ".";
+        });
+      });
+  </script>
+</body>
+</html>
