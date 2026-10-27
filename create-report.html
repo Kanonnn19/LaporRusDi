@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buat Laporan - Lapor RusDi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .halaman { display: flex; min-height: 100vh; background: var(--light-bg); }
+    .isi { flex: 1; padding: 32px; }
+
+    .judul-halaman { color: var(--navy); margin: 0 0 6px; }
+    .sub-judul { color: #64748B; margin: 0 0 24px; }
+
+    /* Kotak form dengan garis warna di atas */
+    .kotak-form { max-width: 640px; border-top: 5px solid var(--blue); }
+    .kolom { margin-bottom: 18px; }
+    textarea { min-height: 120px; }
+
+    /* Dua kolom berdampingan */
+    .dua-kolom { display: flex; gap: 16px; }
+    .dua-kolom .kolom { flex: 1; }
+
+    /* Efek saat kolom diklik */
+    .form-input:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    }
+
+    /* Penghitung karakter */
+    #hitung { text-align: right; font-size: 13px; color: #64748B; margin-top: 4px; }
+
+    .tombol-baris { display: flex; gap: 12px; margin-top: 8px; }
+
+    @media (max-width: 800px) {
+      .halaman { flex-direction: column; }
+      .isi { padding: 16px; }
+      .dua-kolom { flex-direction: column; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="halaman">
+    <div id="sidebar" data-active="create-report.html"></div>
+
+    <main class="isi">
+      <h1 class="judul-halaman">Buat laporan</h1>
+      <p class="sub-judul">Isi data kerusakan dengan jelas supaya cepat ditangani.</p>
+
+      <div class="card kotak-form">
+        <form id="form-laporan">
+
+          <div class="kolom">
+            <label class="form-label" for="judul">Judul laporan</label>
+            <input type="text" id="judul" class="form-input" placeholder="Contoh: AC ruang kelas tidak dingin">
+          </div>
+
+          <div class="dua-kolom">
+            <div class="kolom">
+              <label class="form-label" for="kategori">Kategori</label>
+              <select id="kategori" class="form-input">
+                <option value="">Pilih kategori</option>
+                <option>Listrik</option>
+                <option>Air</option>
+                <option>AC</option>
+                <option>Furnitur</option>
+                <option>Kebersihan</option>
+                <option>Lainnya</option>
+              </select>
+            </div>
+
+            <div class="kolom">
+              <label class="form-label" for="prioritas">Prioritas</label>
+              <select id="prioritas" class="form-input">
+                <option value="">Pilih prioritas</option>
+                <option>Rendah</option>
+                <option>Sedang</option>
+                <option>Tinggi</option>
+                <option>Darurat</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="kolom">
+            <label class="form-label" for="lokasi">Lokasi</label>
+            <input type="text" id="lokasi" class="form-input" placeholder="Contoh: Gedung A lantai 2">
+          </div>
+
+          <div class="kolom">
+            <label class="form-label" for="deskripsi">Deskripsi</label>
+            <textarea id="deskripsi" class="form-input" maxlength="300" placeholder="Jelaskan apa yang rusak"></textarea>
+            <div id="hitung">0 / 300</div>
+          </div>
+
+          <div class="tombol-baris">
+            <button type="submit" class="btn btn-primary">Kirim laporan</button>
+            <a href="user-dashboard.html" class="btn">Batal</a>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    // Cek login. Kalau belum login, otomatis ke halaman login
+    var user = requireRole("pelapor");
+
+    // Penghitung karakter deskripsi
+    document.getElementById("deskripsi").addEventListener("input", function () {
+      document.getElementById("hitung").textContent = this.value.length + " / 300";
+    });
+
+    // Fungsi kecil: tampilkan peringatan lalu arahkan kursor ke kolom yang salah
+    function peringatan(pesan, idKolom) {
+      alert(pesan);
+      document.getElementById(idKolom).focus();
+    }
+
+    // Saat tombol "Kirim laporan" ditekan
+    document.getElementById("form-laporan").addEventListener("submit", function (e) {
+      e.preventDefault(); // supaya halaman tidak reload
+
+      // Ambil isi form
+      var judul = document.getElementById("judul").value.trim();
+      var kategori = document.getElementById("kategori").value;
+      var lokasi = document.getElementById("lokasi").value.trim();
+      var prioritas = document.getElementById("prioritas").value;
+      var deskripsi = document.getElementById("deskripsi").value.trim();
+
+      // Cek apakah ada yang kosong
+      if (judul === "") { peringatan("Judul harus diisi!", "judul"); return; }
+      if (kategori === "") { peringatan("Kategori harus dipilih!", "kategori"); return; }
+      if (lokasi === "") { peringatan("Lokasi harus diisi!", "lokasi"); return; }
+      if (prioritas === "") { peringatan("Prioritas harus dipilih!", "prioritas"); return; }
+      if (deskripsi === "") { peringatan("Deskripsi harus diisi!", "deskripsi"); return; }
+
+      // Buat laporan baru
+      var laporanBaru = {
+        id: generateReportId(),
+        title: judul,
+        category: kategori,
+        location: lokasi,
+        description: deskripsi,
+        priority: prioritas,
+        userId: user.id,
+        status: "Menunggu",
+        date: getToday()
+      };
+
+      // Simpan ke daftar laporan
+      var semua = getData(KEYS.reports);
+      semua.push(laporanBaru);
+      saveData(KEYS.reports, semua);
+
+      // Catat riwayat status laporan
+      addStatusHistory(laporanBaru.id, "Menunggu", "Laporan dikirim oleh pelapor.", user.id);
+
+      // Pindah ke dashboard
+      alert("Laporan berhasil dikirim!");
+      window.location.href = "user-dashboard.html";
+    });
+  </script>
+</body>
+</html>

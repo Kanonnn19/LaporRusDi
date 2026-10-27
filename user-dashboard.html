@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Saya - Lapor RusDi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .halaman { display: flex; min-height: 100vh; background: var(--light-bg); }
+    .isi { flex: 1; padding: 32px; }
+
+    /* Banner sapaan di bagian atas */
+    .banner {
+      background: linear-gradient(135deg, var(--navy), var(--blue));
+      color: white;
+      padding: 28px 32px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .banner h1 { margin: 0 0 6px; font-size: 26px; }
+    .banner p { margin: 0; opacity: 0.85; }
+    .tombol-banner {
+      background: white;
+      color: var(--navy);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 0.2s;
+    }
+    .tombol-banner:hover { transform: translateY(-2px); }
+
+    /* Kartu statistik berwarna */
+    .statistik { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+    .statistik .card {
+      flex: 1;
+      min-width: 150px;
+      border-top: 5px solid var(--blue);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .statistik .card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12); }
+    .statistik .menunggu { border-top-color: var(--menunggu); }
+    .statistik .diproses { border-top-color: var(--diproses); }
+    .statistik .selesai { border-top-color: var(--selesai); }
+    .angka { font-size: 34px; font-weight: 800; color: var(--navy); }
+    .nama-stat { color: #64748B; }
+
+    /* Tabel */
+    table { width: 100%; border-collapse: collapse; }
+    th { color: #64748B; text-align: left; padding: 10px; border-bottom: 2px solid #E2E8F0; }
+    td { padding: 12px 10px; border-bottom: 1px solid #F1F5F9; }
+    tbody tr:hover { background: #F1F5F9; }
+    td a { color: var(--blue); font-weight: 600; }
+    #kosong { text-align: center; color: #64748B; padding: 24px; }
+
+    @media (max-width: 800px) {
+      .halaman { flex-direction: column; }
+      .isi { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="halaman">
+    <div id="sidebar" data-active="user-dashboard.html"></div>
+
+    <main class="isi">
+      <div class="banner">
+        <div>
+          <h1 id="sapaan">Dashboard</h1>
+          <p>Pantau semua laporan yang kamu kirim di sini.</p>
+        </div>
+        <a href="create-report.html" class="tombol-banner">+ Buat laporan</a>
+      </div>
+
+      <div class="statistik">
+        <div class="card"><div class="angka" id="total">0</div><div class="nama-stat">Total laporan</div></div>
+        <div class="card menunggu"><div class="angka" id="menunggu">0</div><div class="nama-stat">Menunggu</div></div>
+        <div class="card diproses"><div class="angka" id="diproses">0</div><div class="nama-stat">Diproses</div></div>
+        <div class="card selesai"><div class="angka" id="selesai">0</div><div class="nama-stat">Selesai</div></div>
+      </div>
+
+      <div class="card">
+        <h2>Laporan saya</h2>
+        <table>
+          <thead>
+            <tr><th>No.</th><th>Judul</th><th>Status</th><th>Tanggal</th><th></th></tr>
+          </thead>
+          <tbody id="isi-tabel"></tbody>
+        </table>
+        <p id="kosong">Belum ada laporan. Klik "Buat laporan" untuk memulai.</p>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    // Cek login. Kalau belum login, otomatis ke halaman login
+    var user = requireRole("pelapor");
+
+    if (user !== null) {
+      // Sapaan sesuai jam
+      var jam = new Date().getHours();
+      var salam = "Selamat malam";
+      if (jam < 11) { salam = "Selamat pagi"; }
+      else if (jam < 15) { salam = "Selamat siang"; }
+      else if (jam < 18) { salam = "Selamat sore"; }
+      document.getElementById("sapaan").textContent = salam + ", " + user.name + "!";
+
+      // Ambil semua laporan, lalu pilih yang milik user ini
+      var semua = getData(KEYS.reports);
+      var laporanSaya = [];
+      for (var i = 0; i < semua.length; i++) {
+        if (semua[i].userId === user.id) {
+          laporanSaya.push(semua[i]);
+        }
+      }
+
+      // Hitung jumlah laporan per status
+      var menunggu = 0;
+      var diproses = 0;
+      var selesai = 0;
+      for (var j = 0; j < laporanSaya.length; j++) {
+        if (laporanSaya[j].status === "Menunggu") { menunggu++; }
+        if (laporanSaya[j].status === "Diproses") { diproses++; }
+        if (laporanSaya[j].status === "Selesai") { selesai++; }
+      }
+
+      document.getElementById("total").textContent = laporanSaya.length;
+      document.getElementById("menunggu").textContent = menunggu;
+      document.getElementById("diproses").textContent = diproses;
+      document.getElementById("selesai").textContent = selesai;
+
+      // Tampilkan laporan di tabel
+      var baris = "";
+      for (var k = 0; k < laporanSaya.length; k++) {
+        var r = laporanSaya[k];
+        baris += "<tr>";
+        baris += "<td>" + r.id + "</td>";
+        baris += "<td>" + r.title + "</td>";
+        baris += "<td>" + statusBadge(r.status) + "</td>";
+        baris += "<td>" + formatDate(r.date) + "</td>";
+        baris += "<td><a href='report-detail.html?id=" + r.id + "'>Detail</a></td>";
+        baris += "</tr>";
+      }
+      document.getElementById("isi-tabel").innerHTML = baris;
+
+      // Sembunyikan tulisan "Belum ada laporan" kalau sudah ada isinya
+      if (laporanSaya.length > 0) {
+        document.getElementById("kosong").style.display = "none";
+      }
+    }
+  </script>
+</body>
+</html>
