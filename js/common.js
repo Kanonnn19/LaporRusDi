@@ -1,4 +1,4 @@
-// ===== common.js : fungsi umum yang dipakai SEMUA halaman =====
+
 // Wajib dimuat SETELAH data.js
 
 // --- Baca & simpan data LocalStorage ---
