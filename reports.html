@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tailwind.css"><link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <title>Daftar Laporan - LaporRusDi</title>
+  <style>
+    .page-wrap{max-width:1200px;margin:auto;padding:38px 24px 64px}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#3B82F6}.page-heading{font-size:clamp(28px,4vw,38px);font-weight:800;color:#151E32;line-height:1.15}.muted{color:#64748B}.filter-panel{display:grid;grid-template-columns:minmax(200px,2fr) repeat(2,minmax(150px,1fr)) auto;gap:12px;align-items:end}.filter-panel label{display:block;font-size:13px;font-weight:700;margin-bottom:7px;color:#334155}.report-card{display:flex;gap:16px;align-items:flex-start;transition:transform .18s,border-color .18s}.report-card:hover{transform:translateY(-2px);border-color:#93C5FD}.report-symbol{width:58px;height:58px;flex:0 0 58px;border-radius:16px;background:#EFF6FF;color:#2563EB;display:grid;place-items:center}.report-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12px;color:#64748B}.type-chip{font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px;background:#F1F5F9;color:#334155}.stats-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.stats-box{padding:16px;border:1px solid #E2E8F0;background:#fff;border-radius:14px}.stats-num{font-size:24px;font-weight:800;color:#151E32}.page-footnote{font-size:12px;color:#94A3B8}@media(max-width:760px){.filter-panel{grid-template-columns:1fr}.report-card{gap:12px}.report-symbol{width:46px;height:46px;flex-basis:46px}.stats-strip{gap:8px}.stats-box{padding:12px}.stats-num{font-size:20px}}
+  </style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-800">
+  <div id="navbar" data-active="laporan"></div>
+  <main class="page-wrap">
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-7">
+      <div><p class="eyebrow mb-2">Pusat informasi kampus</p><h1 class="page-heading">Daftar laporan</h1><p class="muted mt-3 max-w-2xl">Cari laporan barang hilang atau ditemukan, lalu buka detailnya untuk melihat informasi dan memberi dukungan.</p></div>
+      <a href="create-report.html" class="btn btn-primary"><i data-lucide="plus" class="inline w-4 h-4 mr-1"></i> Buat laporan</a>
+    </div>
+    <div class="stats-strip mb-6">
+      <div class="stats-box"><p class="muted text-sm">Semua laporan</p><p id="count-all" class="stats-num">0</p></div>
+      <div class="stats-box"><p class="muted text-sm">Barang hilang</p><p id="count-lost" class="stats-num">0</p></div>
+      <div class="stats-box"><p class="muted text-sm">Barang ditemukan</p><p id="count-found" class="stats-num">0</p></div>
+    </div>
+    <section class="card mb-6">
+      <div class="flex items-center gap-2 mb-4"><i data-lucide="sliders-horizontal" class="text-[#3B82F6]"></i><h2 class="font-bold text-lg">Cari dan filter</h2></div>
+      <div class="filter-panel">
+        <div><label for="search-report">Kata kunci</label><input id="search-report" class="form-input" placeholder="Nama barang, lokasi, atau kode laporan..."></div>
+        <div><label for="filter-type">Jenis laporan</label><select id="filter-type" class="form-input"><option value="">Semua jenis</option><option value="hilang">Barang hilang</option><option value="ditemukan">Barang ditemukan</option></select></div>
+        <div><label for="filter-status">Status</label><select id="filter-status" class="form-input"><option value="">Semua status</option><option value="Menunggu">Menunggu</option><option value="Diverifikasi">Diverifikasi</option><option value="Diproses">Diproses</option><option value="Selesai">Selesai</option><option value="Ditolak">Ditolak</option></select></div>
+        <button id="reset-filter" class="btn bg-slate-100 text-slate-700">Reset filter</button>
+      </div>
+    </section>
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4"><p id="result-label" class="text-sm muted">Memuat laporan...</p><select id="sort-report" class="form-input" style="width:auto"><option value="newest">Terbaru</option><option value="oldest">Terlama</option></select></div>
+    <div id="report-list" class="grid md:grid-cols-2 gap-4"></div>
+    <p class="page-footnote mt-6">Informasi laporan ditampilkan sesuai data yang tersedia pada browser atau sistem proyek.</p>
+  </main>
+  <div id="footer"></div>
+  <script src="js/data.js"></script><script src="js/common.js"></script>
+  <script>
+    (function(){
+      var sampleReports = [
+        {id:'DEMO-001',title:'Dompet warna hitam',type:'hilang',category:'Aksesori',building:'Perpustakaan',room:'Lantai 2',date:'2026-10-27',status:'Menunggu',description:'Dompet kecil warna hitam kemungkinan tertinggal di area meja baca.',reporterName:'Mahasiswa',location:'Perpustakaan lantai 2'},
+        {id:'DEMO-002',title:'Kartu mahasiswa ditemukan',type:'ditemukan',category:'Kartu identitas',building:'Fakultas Teknik',room:'Dekat lobi',date:'2026-10-26',status:'Diverifikasi',description:'Kartu mahasiswa ditemukan dekat pintu masuk lobi.',reporterName:'Mahasiswa',location:'Lobi Fakultas Teknik'},
+        {id:'DEMO-003',title:'Botol minum stainless',type:'hilang',category:'Barang pribadi',building:'Kantin kampus',room:'Meja dekat jendela',date:'2026-10-24',status:'Diproses',description:'Botol minum stainless berwarna perak.',reporterName:'Mahasiswa',location:'Kantin kampus'}
+      ];
+      function readReports(){ try { if(typeof KEYS!=='undefined' && KEYS.reports){ return getData(KEYS.reports); } } catch(e){} return []; }
+      var reports = readReports();
+      var demoMode = reports.length===0;
+      if(demoMode) reports=sampleReports.slice();
+      function val(r, keys, fallback){ for(var i=0;i<keys.length;i++){ if(r[keys[i]]!==undefined && r[keys[i]]!==null && r[keys[i]]!=='') return r[keys[i]]; } return fallback; }
+      function typeOf(r){ var t=String(val(r,['type','reportType','jenis','kind'],'')).toLowerCase(); if(t.indexOf('temu')>=0 || t==='found')return 'ditemukan'; if(t.indexOf('hilang')>=0 || t==='lost')return 'hilang'; var title=String(val(r,['title','name'],'')).toLowerCase(); return (title.indexOf('ditemukan')>=0 || title.indexOf('menemukan')>=0) ? 'ditemukan' : 'hilang'; }
+      function safe(s){ return typeof escapeHtml==='function'?escapeHtml(String(s==null?'':s)):String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+      function badge(s){var allowed=['Menunggu','Diverifikasi','Diproses','Selesai','Ditolak']; if(allowed.indexOf(s)<0)s='Menunggu'; return '<span class="badge badge-'+s.toLowerCase()+'">'+safe(s)+'</span>';}
+      function dateText(d){ if(!d)return 'Tanggal tidak tersedia'; try{return typeof formatDate==='function'?formatDate(d):new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});}catch(e){return safe(d);} }
+      function render(){
+        var q=document.getElementById('search-report').value.trim().toLowerCase(), type=document.getElementById('filter-type').value, status=document.getElementById('filter-status').value, sort=document.getElementById('sort-report').value;
+        document.getElementById('count-all').textContent=reports.length;
+        document.getElementById('count-lost').textContent=reports.filter(function(r){return typeOf(r)==='hilang';}).length;
+        document.getElementById('count-found').textContent=reports.filter(function(r){return typeOf(r)==='ditemukan';}).length;
+        var list=reports.filter(function(r){var title=val(r,['title','name','itemName'],'Tanpa judul'), loc=val(r,['location'],'')+' '+val(r,['building','campusBuilding'],'')+' '+val(r,['room','place'],''); var hay=[title,loc,r.id,val(r,['description','detail'],'')].join(' ').toLowerCase(); return (!q||hay.indexOf(q)>=0)&&(!type||typeOf(r)===type)&&(!status||val(r,['status'],'Menunggu')===status);});
+        list.sort(function(a,b){var da=new Date(val(a,['date','createdAt'],'2000-01-01')).getTime(),db=new Date(val(b,['date','createdAt'],'2000-01-01')).getTime();return sort==='oldest'?da-db:db-da;});
+        document.getElementById('result-label').textContent=list.length+' laporan ditemukan';
+        var html=list.map(function(r){var t=typeOf(r),title=val(r,['title','name','itemName'],'Barang tanpa nama'),loc=val(r,['location'],'')||[val(r,['building','campusBuilding'],'Lokasi kampus'),val(r,['room','place'],'')].filter(Boolean).join(', '), desc=val(r,['description','detail'],'Belum ada deskripsi tambahan.'), icon=t==='hilang'?'search':'package-check';return '<a class="card report-card border border-slate-100 block" href="report-detail.html?id='+encodeURIComponent(r.id)+'"><div class="report-symbol"><i data-lucide="'+icon+'"></i></div><div class="min-w-0 flex-1"><div class="report-meta mb-2"><span>'+safe(r.id||'Tanpa kode')+'</span><span>•</span><span>'+dateText(val(r,['date','createdAt'],''))+'</span></div><div class="flex flex-wrap gap-2 items-center mb-2"><span class="type-chip">Barang '+(t==='hilang'?'hilang':'ditemukan')+'</span>'+badge(val(r,['status'],'Menunggu'))+'</div><h2 class="font-bold text-lg text-[#151E32]">'+safe(title)+'</h2><p class="text-sm muted mt-1"><i data-lucide="map-pin" class="inline w-4 h-4"></i> '+safe(loc||'Lokasi belum dicantumkan')+'</p><p class="text-sm text-slate-600 mt-3 line-clamp-2">'+safe(desc)+'</p><span class="inline-flex items-center gap-1 text-sm font-bold text-[#2563EB] mt-4">Lihat detail <i data-lucide="arrow-up-right" class="w-4 h-4"></i></span></div></a>';}).join('');
+        if(!html) html='<div class="card empty-state md:col-span-2"><i data-lucide="search-x" class="w-10 h-10 mx-auto mb-3"></i><h3 class="font-bold text-slate-700">Laporan tidak ditemukan</h3><p class="text-sm mt-1">Coba kata kunci atau filter yang berbeda.</p></div>';
+        document.getElementById('report-list').innerHTML=html;
+        if(window.lucide)lucide.createIcons();
+      }
+      ['search-report','filter-type','filter-status','sort-report'].forEach(function(id){document.getElementById(id).addEventListener(id==='search-report'?'input':'change',render);});
+      document.getElementById('reset-filter').addEventListener('click',function(){document.getElementById('search-report').value='';document.getElementById('filter-type').value='';document.getElementById('filter-status').value='';document.getElementById('sort-report').value='newest';render();});
+      render();
+      if(demoMode) { var note=document.createElement('p');note.className='text-xs text-amber-700 mt-4';note.textContent='Mode pratinjau: data contoh ditampilkan karena data laporan proyek belum tersedia di browser ini.';document.getElementById('report-list').after(note); }
+    })();
+  </script>
+</body></html>
