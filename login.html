@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masuk - Lapor RusDi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { background: var(--light-bg); }
+    .auth-wrap { min-height: calc(100vh - 78px - 260px); display: flex; align-items: center; justify-content: center; padding: 40px 16px; }
+    .auth-card { width: 100%; max-width: 440px; border-top: 5px solid var(--blue); }
+    .auth-card h1 { color: var(--navy); margin: 0 0 6px; font-size: 28px; font-weight: 800; }
+    .auth-sub { color: #64748B; margin: 0 0 24px; }
+    .kolom { margin-bottom: 16px; }
+    .btn-full { width: 100%; }
+    .auth-foot { text-align: center; color: #64748B; font-size: 14px; margin-top: 18px; }
+    .auth-foot a { color: var(--blue); font-weight: 600; }
+    .demo-box { margin-top: 22px; padding-top: 18px; border-top: 1px dashed #CBD5E1; }
+    .demo-box p { font-size: 13px; color: #64748B; margin: 0 0 10px; }
+    .demo-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+    .demo-btns button { padding: 8px 14px; font-size: 13px; border-radius: 8px; background: #F1F5F9; color: #334155; font-weight: 600; border: 1px solid #E2E8F0; cursor: pointer; }
+    .demo-btns button:hover { background: #E2E8F0; }
+  </style>
+</head>
+<body>
+  <div id="navbar" data-active="login"></div>
+
+  <div class="auth-wrap">
+    <div class="card auth-card">
+      <h1>Masuk</h1>
+      <p class="auth-sub">Masuk untuk membuat dan memantau laporan.</p>
+
+      <form id="form-login" novalidate>
+        <div class="kolom">
+          <label class="form-label" for="email">Email</label>
+          <input type="email" id="email" class="form-input" placeholder="nama@kampus.ac.id" autocomplete="username">
+          <div class="form-error" id="err-email"></div>
+        </div>
+        <div class="kolom">
+          <label class="form-label" for="password">Password</label>
+          <input type="password" id="password" class="form-input" placeholder="Password" autocomplete="current-password">
+          <div class="form-error" id="err-password"></div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Masuk</button>
+      </form>
+
+      <p class="auth-foot">Belum punya akun? <a href="register.html">Daftar</a></p>
+
+      <div class="demo-box">
+        <p>Akun demo (klik untuk mengisi otomatis):</p>
+        <div class="demo-btns">
+          <button type="button" data-email="budi@mahasiswa.ac.id" data-pass="budi123">Pelapor</button>
+          <button type="button" data-email="admin@rusdi.ac.id" data-pass="admin123">Admin</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    // Kalau sudah login, langsung ke dashboard
+    var sudah = getCurrentUser();
+    if (sudah !== null) { window.location.href = getDashboardPage(sudah.role); }
+
+    function setError(id, pesan) {
+      document.getElementById("err-" + id).textContent = pesan;
+      document.getElementById(id).classList.toggle("error", pesan !== "");
+    }
+
+    // Tombol akun demo
+    var demoButtons = document.querySelectorAll(".demo-btns button");
+    for (var i = 0; i < demoButtons.length; i++) {
+      demoButtons[i].addEventListener("click", function () {
+        document.getElementById("email").value = this.getAttribute("data-email");
+        document.getElementById("password").value = this.getAttribute("data-pass");
+        setError("email", ""); setError("password", "");
+      });
+    }
+
+    document.getElementById("form-login").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var email = document.getElementById("email").value.trim().toLowerCase();
+      var password = document.getElementById("password").value;
+      setError("email", ""); setError("password", "");
+
+      if (email === "") { setError("email", "Email harus diisi."); return; }
+      if (password === "") { setError("password", "Password harus diisi."); return; }
+
+      var users = getData(KEYS.users);
+      var ditemukan = null;
+      for (var j = 0; j < users.length; j++) {
+        if ((users[j].email || "").toLowerCase() === email && users[j].password === password) {
+          ditemukan = users[j];
+        }
+      }
+      if (ditemukan === null) {
+        setError("password", "Email atau password salah.");
+        return;
+      }
+
+      localStorage.setItem(KEYS.session, ditemukan.id);
+      window.location.href = getDashboardPage(ditemukan.role);
+    });
+  </script>
+</body>
+</html>
