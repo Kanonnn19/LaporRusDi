@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <title>Dashboard Admin - LaporRusDi</title>
+  <style>
+    .grid-stat { display: grid; grid-template-columns: repeat(1, 1fr); gap: 16px; }
+    .grid-two { display: grid; grid-template-columns: 1fr; gap: 24px; }
+    @media (min-width: 640px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1100px) { .grid-stat { grid-template-columns: repeat(4, 1fr); } }
+    @media (min-width: 1024px) { .grid-two { grid-template-columns: 3fr 2fr; } }
+    .stat-num { font-size: 32px; font-weight: 800; color: #151E32; line-height: 1.1; }
+    .stat-icon-box { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .bar-track { height: 10px; background: #E2E8F0; border-radius: 999px; overflow: hidden; }
+    .bar-fill { height: 10px; border-radius: 999px; background: #3B82F6; }
+    .tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .tbl th { text-align: left; color: #64748B; font-weight: 600; padding: 10px 12px; border-bottom: 1px solid #E2E8F0; white-space: nowrap; }
+    .tbl td { padding: 12px; border-bottom: 1px solid #F1F5F9; vertical-align: middle; }
+    .tbl-wrap { overflow-x: auto; }
+    .link-blue { color: #3B82F6; font-weight: 600; }
+    .link-blue:hover { color: #2563EB; }
+  </style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-800">
+  <div class="flex flex-col md:flex-row min-h-screen">
+    <div id="sidebar" data-active="admin-dashboard.html"></div>
+
+    <main class="flex-1 p-6 md:p-10" style="min-width:0">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex flex-wrap justify-between items-center gap-4">
+          <div>
+            <h1 class="text-3xl font-extrabold text-[#151E32]">Dashboard Admin</h1>
+            <p class="text-slate-500 mt-2">Ringkasan seluruh laporan kerusakan fasilitas kampus.</p>
+          </div>
+          <a href="admin-reports.html" class="btn btn-primary">Kelola Laporan</a>
+        </div>
+
+        <!-- Kartu statistik -->
+        <section class="grid-stat" style="margin-top:32px">
+          <div class="card flex items-center gap-4">
+            <div class="stat-icon-box" style="background:#DBEAFE"><i data-lucide="clipboard-list" class="icon-blue"></i></div>
+            <div><p class="text-slate-500 text-sm">Total Laporan</p><p class="stat-num" id="stat-total">0</p></div>
+          </div>
+          <div class="card flex items-center gap-4">
+            <div class="stat-icon-box" style="background:#FEF3C7"><i data-lucide="clock" class="icon-yellow"></i></div>
+            <div><p class="text-slate-500 text-sm">Perlu Verifikasi</p><p class="stat-num" id="stat-menunggu">0</p></div>
+          </div>
+          <div class="card flex items-center gap-4">
+            <div class="stat-icon-box" style="background:#DBEAFE"><i data-lucide="wrench" class="icon-blue"></i></div>
+            <div><p class="text-slate-500 text-sm">Sedang Diproses</p><p class="stat-num" id="stat-proses">0</p></div>
+          </div>
+          <div class="card flex items-center gap-4">
+            <div class="stat-icon-box" style="background:#DCFCE7"><i data-lucide="check-circle" class="icon-green"></i></div>
+            <div><p class="text-slate-500 text-sm">Selesai</p><p class="stat-num" id="stat-selesai">0</p></div>
+          </div>
+        </section>
+
+        <section class="grid-two" style="margin-top:24px">
+          
+          <!-- Laporan terbaru -->
+          <div class="card">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold">Laporan Terbaru</h2>
+              <a href="admin-reports.html" class="link-blue text-sm">Lihat semua</a>
+            </div>
+            <div class="tbl-wrap">
+              <table class="tbl">
+                <thead>
+                  <tr><th>ID</th><th>Judul</th><th>Lokasi</th><th>Prioritas</th><th>Status</th></tr>
+                </thead>
+                <tbody id="recent-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <!-- Perlu tindakan -->
+            <div class="card">
+              <h2 class="text-xl font-bold mb-1">Perlu Tindakan</h2>
+              <p class="text-slate-500 text-sm mb-4">Laporan menunggu verifikasi, urut dari yang paling mendesak.</p>
+              <ul id="action-list" class="space-y-3"></ul>
+            </div>
+
+            <!-- Laporan per kategori -->
+            <div class="card" style="margin-top:24px">
+              <h2 class="text-xl font-bold mb-4">Laporan per Kategori</h2>
+              <div id="category-chart" class="space-y-4"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    var user = requireRole("admin");
+
+    if (user !== null) {
+      var reports = getData(KEYS.reports);
+
+      // 1. Statistik
+      var menunggu = 0, diproses = 0, selesai = 0;
+      for (var i = 0; i < reports.length; i++) {
+        if (reports[i].status === "Menunggu") { menunggu++; }
+        if (reports[i].status === "Diproses" || reports[i].status === "Diverifikasi") { diproses++; }
+        if (reports[i].status === "Selesai") { selesai++; }
+      }
+      document.querySelector("#stat-total").textContent = reports.length;
+      document.querySelector("#stat-menunggu").textContent = menunggu;
+      document.querySelector("#stat-proses").textContent = diproses;
+      document.querySelector("#stat-selesai").textContent = selesai;
+
+      // 2. Laporan terbaru (ID terbesar dulu, ambil 6)
+      var urut = reports.slice();
+      urut.sort(function (a, b) { return a.id < b.id ? 1 : -1; });
+      var html = "";
+      for (var j = 0; j < urut.length && j < 6; j++) {
+        var r = urut[j];
+        html += '<tr>' +
+          '<td><a href="report-detail.html?id=' + encodeURIComponent(r.id) + '" class="link-blue">' + escapeHtml(r.id) + '</a></td>' +
+          '<td class="font-semibold">' + escapeHtml(r.title || "-") + '</td>' +
+          '<td class="text-slate-500">' + escapeHtml((r.building || "-") + (r.room ? ", " + r.room : "")) + '</td>' +
+          '<td>' + (r.priority ? priorityBadge(r.priority) : '<span class="text-slate-400">-</span>') + '</td>' +
+          '<td>' + statusBadge(r.status) + '</td></tr>';
+      }
+      if (html === "") {
+        html = '<tr><td colspan="5"><div class="empty-state">Belum ada laporan masuk.</div></td></tr>';
+      }
+      document.querySelector("#recent-body").innerHTML = html;
+
+      // 3. Perlu tindakan: status Menunggu, prioritas tertinggi dulu
+      var bobot = { "Darurat": 4, "Tinggi": 3, "Sedang": 2, "Rendah": 1 };
+      var antre = [];
+      for (var a = 0; a < reports.length; a++) {
+        if (reports[a].status === "Menunggu") { antre.push(reports[a]); }
+      }
+      antre.sort(function (x, y) {
+        var selisih = (bobot[y.priority] || 0) - (bobot[x.priority] || 0);
+        if (selisih !== 0) { return selisih; }
+        return x.id > y.id ? 1 : -1;
+      });
+      var html2 = "";
+      for (var b = 0; b < antre.length && b < 5; b++) {
+        var q = antre[b];
+        html2 += '<li class="border rounded-lg p-3 flex justify-between items-center gap-3">' +
+          '<div style="min-width:0"><p class="font-semibold text-sm">' + escapeHtml(q.title || "-") + '</p>' +
+          '<p class="text-slate-500 text-xs mt-1">' + escapeHtml(q.id) + ' &middot; ' + (q.date ? formatDate(q.date) : "-") + '</p></div>' +
+          '<a href="admin-reports.html?id=' + encodeURIComponent(q.id) + '" class="btn btn-primary btn-sm" style="padding:6px 14px;font-size:13px">Tinjau</a></li>';
+      }
+      if (html2 === "") {
+        html2 = '<li class="empty-state" style="padding:16px">Tidak ada laporan yang menunggu. Kerja bagus!</li>';
+      }
+      document.querySelector("#action-list").innerHTML = html2;
+
+      // 4. Grafik batang per kategori
+      var categories = getData(KEYS.categories);
+      var hitung = {};
+      for (var c = 0; c < categories.length; c++) { hitung[categories[c]] = 0; }
+      for (var d = 0; d < reports.length; d++) {
+        var kat = reports[d].category || "Lainnya";
+        hitung[kat] = (hitung[kat] || 0) + 1;
+      }
+      var terbanyak = 1;
+      for (var nama in hitung) { if (hitung[nama] > terbanyak) { terbanyak = hitung[nama]; } }
+      var html3 = "";
+      for (var nama2 in hitung) {
+        var persen = Math.round((hitung[nama2] / terbanyak) * 100);
+        html3 += '<div><div class="flex justify-between text-sm mb-1"><span class="font-semibold">' + escapeHtml(nama2) +
+          '</span><span class="text-slate-500">' + hitung[nama2] + '</span></div>' +
+          '<div class="bar-track"><div class="bar-fill" style="width:' + persen + '%"></div></div></div>';
+      }
+      if (html3 === "") { html3 = '<div class="empty-state" style="padding:16px">Belum ada data kategori.</div>'; }
+      document.querySelector("#category-chart").innerHTML = html3;
+    }
+
+    if (window.lucide) { lucide.createIcons(); }
+  </script>
+</body>
+</html>
