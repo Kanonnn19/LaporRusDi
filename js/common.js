@@ -1,7 +1,6 @@
-// ===== common.js : fungsi umum yang dipakai SEMUA halaman =====
+
 // Wajib dimuat SETELAH data.js
 
-// --- Baca & simpan data LocalStorage ---
 function getData(key) {
   var text = localStorage.getItem(key);
   if (text === null) { return []; }
@@ -11,7 +10,7 @@ function saveData(key, data) {
   localStorage.setItem(key, JSON.stringify(data));
 }
 
-// --- Sesi login ---
+
 function getCurrentUser() {
   // Jika data.js gagal dimuat, KEYS tidak ada. Anggap belum login supaya navbar & footer tetap tampil.
   if (typeof KEYS === "undefined") {
@@ -26,7 +25,7 @@ function getCurrentUser() {
   }
   return null;
 }
-// Panggil di awal halaman dashboard. Contoh: requireRole("admin")
+
 function requireRole(role) {
   var user = getCurrentUser();
   if (user === null) { window.location.href = "login.html"; return null; }
@@ -118,7 +117,6 @@ function showConfirm(message, onYes) {
 
 // --- Navbar publik: <div id="navbar" data-active="home"></div> ---
 // Layar lebar (lg ke atas, 1024px+): menu di tengah, huruf lebih besar di layar 1280px+.
-// Layar kecil: tombol hamburger yang membuka menu ke bawah.
 function renderNavbar() {
   var box = document.querySelector("#navbar");
   if (box === null) { return; }
