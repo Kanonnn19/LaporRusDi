@@ -1,5 +1,4 @@
 
-// Wajib dimuat SETELAH data.js
 
 function getData(key) {
   var text = localStorage.getItem(key);
