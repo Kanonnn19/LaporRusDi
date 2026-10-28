@@ -1,13 +1,8 @@
 @import "tailwindcss";
 
-/* Beri tahu Tailwind file mana yang harus dipindai untuk mencari class
-   (path dihitung dari lokasi file ini, yaitu folder css/) */
 @source "../*.html";
 @source "../js/*.js";
 
-/* Lebarkan container halaman.
-   Semua class max-w-6xl (navbar, footer, isi halaman) jadi 1448px
-   (isi 1400px + padding kiri-kanan 24px), supaya tampilannya lebih lega. */
 @theme {
   --container-6xl: 90.5rem;
 }
