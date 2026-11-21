@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dasbor Teknisi - LaporRusDi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <div id="sidebar" data-active="technician-dashboard.html"></div>
+
+    <main class="app-main">
+      <div class="page-wrap stack">
+        <div class="card">
+          <div class="page-head" style="margin-bottom:0">
+            <div>
+              <h1 class="page-title" id="sapaan">Daftar Perbaikan</h1>
+              <p class="page-sub">Tugas perbaikan yang ditugaskan admin kepada kamu.</p>
+            </div>
+            <div class="filter-bar" id="filter-bar">
+              <button type="button" class="filter-btn active" data-filter="semua">Semua</button>
+              <button type="button" class="filter-btn" data-filter="Diverifikasi">Ditugaskan</button>
+              <button type="button" class="filter-btn" data-filter="Diproses">Diproses</button>
+              <button type="button" class="filter-btn" data-filter="Selesai">Selesai</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="card"><p class="kpi-label">Total tugas</p><p class="kpi-value" id="kpi-total">0</p></div>
+          <div class="card"><p class="kpi-label">Belum dikerjakan</p><p class="kpi-value" id="kpi-baru">0</p></div>
+          <div class="card"><p class="kpi-label">Sedang diproses</p><p class="kpi-value" id="kpi-proses">0</p></div>
+          <div class="card"><p class="kpi-label">Selesai</p><p class="kpi-value" id="kpi-selesai">0</p></div>
+        </div>
+
+        <div class="grid-cards" id="container-tugas"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/technician-dashboard.js"></script>
+</body>
+</html>

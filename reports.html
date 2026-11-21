@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/style.css">
+  <title>Daftar Laporan - LaporRusDi</title>
+  <style>
+    .filter-panel { display: grid; grid-template-columns: minmax(200px, 2fr) repeat(2, minmax(150px, 1fr)) auto; gap: 12px; align-items: end; }
+    .stats-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .stats-box { padding: 16px; border: 1px solid #E2E8F0; background: #fff; border-radius: 14px; }
+    .stats-num { font-size: 24px; font-weight: 800; color: #151E32; }
+    @media (max-width: 760px) {
+      .filter-panel { grid-template-columns: 1fr; }
+      .stats-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-800">
+  <div id="navbar" data-active="laporan"></div>
+
+  <main class="page-public">
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">Daftar laporan</h1>
+        <p class="page-sub">Cari laporan kerusakan fasilitas kampus, lalu buka detailnya untuk memantau perkembangan.</p>
+      </div>
+      <a href="create-report.html" class="btn btn-primary">+ Buat laporan</a>
+    </div>
+
+    <div class="stats-strip" style="margin-bottom:24px">
+      <div class="stats-box"><p class="muted text-sm">Semua laporan</p><p id="count-all" class="stats-num">0</p></div>
+      <div class="stats-box"><p class="muted text-sm">Menunggu</p><p id="count-menunggu" class="stats-num">0</p></div>
+      <div class="stats-box"><p class="muted text-sm">Sedang diproses</p><p id="count-proses" class="stats-num">0</p></div>
+      <div class="stats-box"><p class="muted text-sm">Selesai</p><p id="count-selesai" class="stats-num">0</p></div>
+    </div>
+
+    <section class="card" style="margin-bottom:24px">
+      <div class="filter-panel">
+        <div>
+          <label class="form-label" for="search-report">Kata kunci</label>
+          <input id="search-report" class="form-input" placeholder="Judul, lokasi, atau kode laporan...">
+        </div>
+        <div>
+          <label class="form-label" for="filter-category">Kategori</label>
+          <select id="filter-category" class="form-input"><option value="">Semua kategori</option></select>
+        </div>
+        <div>
+          <label class="form-label" for="filter-status">Status</label>
+          <select id="filter-status" class="form-input">
+            <option value="">Semua status</option>
+            <option>Menunggu</option><option>Diverifikasi</option><option>Diproses</option>
+            <option>Selesai</option><option>Ditolak</option>
+          </select>
+        </div>
+        <button id="reset-filter" class="btn btn-light">Reset</button>
+      </div>
+    </section>
+
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+      <p id="result-label" class="text-sm muted">Memuat laporan...</p>
+      <select id="sort-report" class="form-input" style="width:auto">
+        <option value="newest">Terbaru</option>
+        <option value="oldest">Terlama</option>
+      </select>
+    </div>
+
+    <div id="report-list" class="grid md:grid-cols-2 gap-4"></div>
+  </main>
+
+  <div id="footer"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    var semuaLaporan = getData(KEYS.reports);
+
+    var pilihKategori = document.getElementById("filter-category");
+    var kategori = getData(KEYS.categories);
+    for (var k = 0; k < kategori.length; k++) {
+      var opsi = document.createElement("option");
+      opsi.textContent = kategori[k];
+      pilihKategori.appendChild(opsi);
+    }
+
+    function tampilkan() {
+      var kata = document.getElementById("search-report").value.trim().toLowerCase();
+      var kat = document.getElementById("filter-category").value;
+      var status = document.getElementById("filter-status").value;
+      var urut = document.getElementById("sort-report").value;
+
+      var menunggu = 0, proses = 0, selesai = 0;
+      for (var i = 0; i < semuaLaporan.length; i++) {
+        var s = semuaLaporan[i].status;
+        if (s === "Menunggu") { menunggu++; }
+        if (s === "Diverifikasi" || s === "Diproses") { proses++; }
+        if (s === "Selesai") { selesai++; }
+      }
+      document.getElementById("count-all").textContent = semuaLaporan.length;
+      document.getElementById("count-menunggu").textContent = menunggu;
+      document.getElementById("count-proses").textContent = proses;
+      document.getElementById("count-selesai").textContent = selesai;
+
+      var hasil = [];
+      for (var j = 0; j < semuaLaporan.length; j++) {
+        var r = semuaLaporan[j];
+        var teks = (r.id + " " + (r.title || "") + " " + getReportLocation(r) + " " + (r.description || "")).toLowerCase();
+        if (kata !== "" && teks.indexOf(kata) === -1) { continue; }
+        if (kat !== "" && r.category !== kat) { continue; }
+        if (status !== "" && r.status !== status) { continue; }
+        hasil.push(r);
+      }
+      hasil.sort(function (a, b) {
+        var da = new Date(a.date || 0).getTime();
+        var db = new Date(b.date || 0).getTime();
+        if (da === db) { return urut === "oldest" ? (a.id > b.id ? 1 : -1) : (a.id < b.id ? 1 : -1); }
+        return urut === "oldest" ? da - db : db - da;
+      });
+
+      document.getElementById("result-label").textContent = hasil.length + " laporan ditemukan";
+
+      var html = "";
+      for (var m = 0; m < hasil.length; m++) {
+        var x = hasil[m];
+        html += '<a class="card report-card" href="report-detail.html?id=' + encodeURIComponent(x.id) + '">' +
+          '<div class="report-meta"><span>' + escapeHtml(x.id) + ' &middot; ' + formatDate(x.date) + '</span>' + statusBadge(x.status) + '</div>' +
+          '<div class="chip-row"><span class="type-chip">' + escapeHtml(x.category || "Lainnya") + '</span>' + (x.priority ? priorityBadge(x.priority) : "") + '</div>' +
+          '<h2 class="report-title">' + escapeHtml(x.title || "Tanpa judul") + '</h2>' +
+          '<p class="report-text">Lokasi: ' + escapeHtml(getReportLocation(x)) + '</p>' +
+          '<p class="report-text clamp-2">' + escapeHtml(x.description || "Belum ada deskripsi.") + '</p>' +
+          '<span class="link-blue" style="display:inline-block;margin-top:12px;font-size:14px">Lihat detail</span></a>';
+      }
+      if (html === "") {
+        html = '<div class="card empty-state md:col-span-2">Laporan tidak ditemukan. Coba kata kunci atau filter lain.</div>';
+      }
+      document.getElementById("report-list").innerHTML = html;
+    }
+
+    document.getElementById("search-report").addEventListener("input", tampilkan);
+    document.getElementById("filter-category").addEventListener("change", tampilkan);
+    document.getElementById("filter-status").addEventListener("change", tampilkan);
+    document.getElementById("sort-report").addEventListener("change", tampilkan);
+    document.getElementById("reset-filter").addEventListener("click", function () {
+      document.getElementById("search-report").value = "";
+      document.getElementById("filter-category").value = "";
+      document.getElementById("filter-status").value = "";
+      document.getElementById("sort-report").value = "newest";
+      tampilkan();
+    });
+    tampilkan();
+  </script>
+</body>
+</html>  

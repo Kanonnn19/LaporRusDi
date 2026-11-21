@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Daftar Teknisi dan Penugasan | Lapor RusDi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <div id="sidebar" data-active="admin-technicians.html"></div>
+
+    <main class="app-main">
+      <div class="page-wrap stack">
+
+        <div class="page-head" style="margin-bottom:0">
+          <div>
+            <h1 class="page-title">Daftar Teknisi dan Penugasan</h1>
+            <p class="page-sub">Manajemen tim pemeliharaan fasilitas kampus.</p>
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-tambah-teknisi">+ Tambah Teknisi Baru</button>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="card"><p class="kpi-label">Total Teknisi</p><p class="kpi-value" id="kpi-total">0</p></div>
+          <div class="card"><p class="kpi-label">Standby (Siap)</p><p class="kpi-value" id="kpi-standby" style="color:#22C55E">0</p></div>
+          <div class="card"><p class="kpi-label">Bertugas di Lapangan</p><p class="kpi-value" id="kpi-lapangan" style="color:#3B82F6">0</p></div>
+          <div class="card"><p class="kpi-label">Selesai 7 Hari Terakhir</p><p class="kpi-value" id="kpi-selesai">0</p></div>
+        </div>
+
+        <!-- Form tambah teknisi -->
+        <div class="card is-hidden" id="card-tambah">
+          <h2 class="section-title">Tambah teknisi baru</h2>
+          <form id="form-teknisi" novalidate>
+            <div class="grid-2 field">
+              <div>
+                <label class="form-label" for="t-nama">Nama lengkap</label>
+                <input id="t-nama" class="form-input" placeholder="Nama teknisi">
+              </div>
+              <div>
+                <label class="form-label" for="t-spesialisasi">Spesialisasi</label>
+                <input id="t-spesialisasi" class="form-input" placeholder="Contoh: Kelistrikan & AC">
+              </div>
+            </div>
+            <div class="grid-2 field">
+              <div>
+                <label class="form-label" for="t-email">Email</label>
+                <input id="t-email" type="email" class="form-input" placeholder="nama@rusdi.ac.id">
+              </div>
+              <div>
+                <label class="form-label" for="t-telepon">Nomor telepon</label>
+                <input id="t-telepon" class="form-input" placeholder="08xx-xxxx-xxxx">
+              </div>
+            </div>
+            <div class="field" style="max-width:320px">
+              <label class="form-label" for="t-password">Password awal</label>
+              <input id="t-password" type="password" class="form-input" placeholder="Minimal 6 karakter">
+            </div>
+            <div class="row-actions">
+              <button type="submit" class="btn btn-primary">Simpan Teknisi</button>
+              <button type="button" class="btn btn-light" id="btn-batal-tambah">Batal</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="page-head" style="margin-bottom:16px">
+            <h2 class="section-title" style="margin:0">Daftar Tim Teknisi</h2>
+            <input type="text" id="input-cari" placeholder="Cari nama..." class="form-input" style="max-width:280px">
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr><th>Nama</th><th>Spesialisasi</th><th>Status</th><th>Telepon</th><th>Tugas aktif</th></tr>
+              </thead>
+              <tbody id="tabel-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" style="max-width:560px">
+          <h2 class="section-title">Pembagian Tugas Perbaikan</h2>
+          <form id="form-penugasan">
+            <div class="field">
+              <label class="form-label" for="select-laporan">Pilih Tiket Laporan Kerusakan Fasilitas</label>
+              <select id="select-laporan" class="form-input"></select>
+            </div>
+            <div class="field">
+              <label class="form-label" for="select-teknisi">Pilih Teknisi Penanggung Jawab</label>
+              <select id="select-teknisi" class="form-input"></select>
+            </div>
+            <div class="field">
+              <label class="form-label" for="catatan-admin">Catatan Tambahan Teknisi</label>
+              <textarea id="catatan-admin" rows="3" class="form-input" placeholder="Instruksi tambahan..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%">Kirim Penugasan</button>
+          </form>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/admin-technicians.js"></script>
+</body>
+</html>

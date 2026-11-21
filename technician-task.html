@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Perbaikan - LaporRusDi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <div id="sidebar" data-active="technician-dashboard.html"></div>
+
+    <main class="app-main">
+      <div class="page-wrap stack">
+        <a href="technician-dashboard.html" class="link-blue">Kembali ke dasbor teknisi</a>
+
+        <div id="task-missing" class="card empty-state is-hidden">
+          <h1 class="section-title">Tugas tidak ditemukan</h1>
+          <p>Tugas ini tidak ada atau tidak ditugaskan kepada kamu.</p>
+        </div>
+
+        <div id="task-content" class="stack is-hidden">
+          <div class="card">
+            <div class="page-head" style="margin-bottom:0">
+              <div>
+                <p class="muted">Tiket <span id="label-tiket-id"></span></p>
+                <h1 class="page-title" id="task-title"></h1>
+                <p class="page-sub" id="task-location"></p>
+              </div>
+              <div class="row-actions" style="align-items:center">
+                <select id="select-status-task" class="form-input" style="width:auto">
+                  <option value="Diverifikasi">Ditugaskan</option>
+                  <option value="Diproses">Diproses</option>
+                  <option value="Selesai">Selesai</option>
+                </select>
+                <button type="button" id="btn-update-status" class="btn btn-primary btn-sm">Update Status</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="stack">
+              <div class="card">
+                <h2 class="section-title">Detail laporan</h2>
+                <div class="info-row"><div><p class="info-label">Deskripsi</p><p class="info-value" id="task-desc"></p></div></div>
+                <div class="info-row"><div><p class="info-label">Prioritas</p><p id="task-priority"></p></div></div>
+                <div class="info-row"><div><p class="info-label">Pelapor</p><p class="info-value" id="task-reporter"></p></div></div>
+                <div class="info-row"><div><p class="info-label">Catatan admin</p><p class="info-value" id="task-admin-note"></p></div></div>
+              </div>
+
+              <div class="card">
+                <h2 class="section-title">Catatan pengerjaan perbaikan</h2>
+                <form id="form-selesai">
+                  <div class="field">
+                    <label class="form-label" for="catatan-perbaikan">Tindakan / penggunaan sparepart</label>
+                    <textarea id="catatan-perbaikan" rows="4" class="form-input" placeholder="Jelaskan komponen yang diganti atau perbaikan yang telah dilakukan"></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary" style="width:100%">Simpan dan tandai pekerjaan selesai</button>
+                </form>
+              </div>
+            </div>
+
+            <div class="stack">
+              <div class="card">
+                <h2 class="section-title">Progres perbaikan</h2>
+                <div class="track"><div class="track-fill" id="progress-bar" style="width:0%"></div></div>
+                <p class="muted" style="font-size:13px;margin-top:8px" id="progress-label"></p>
+              </div>
+              <div class="card">
+                <h2 class="section-title">Riwayat status</h2>
+                <div id="timeline-list"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/technician-task.js"></script>
+</body>
+</html>

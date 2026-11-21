@@ -1,17 +1,27 @@
+var idCounter = 0;
+var REPORT_STATUSES = ["Menunggu", "Diverifikasi", "Diproses", "Selesai", "Ditolak"];
+var REPORT_PRIORITIES = ["Rendah", "Sedang", "Tinggi", "Darurat"];
+var DEFAULT_LOCATIONS = ["Gedung A, Lantai 2", "Gedung B, Lantai 2", "Toilet Lantai 1", "Perpustakaan", "Kantin Kampus"];
 
+function storageKey(name) {
+  if (typeof KEYS !== "undefined" && KEYS[name]) { return KEYS[name]; }
+  return "laporrusdi_" + name;
+}
 
 function getData(key) {
   var text = localStorage.getItem(key);
   if (text === null) { return []; }
-  return JSON.parse(text);
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    return [];
+  }
 }
 function saveData(key, data) {
   localStorage.setItem(key, JSON.stringify(data));
 }
 
-
 function getCurrentUser() {
-  // Jika data.js gagal dimuat, KEYS tidak ada. Anggap belum login supaya navbar & footer tetap tampil.
   if (typeof KEYS === "undefined") {
     console.error("KEYS tidak ditemukan: pastikan js/data.js ada dan dimuat sebelum js/common.js");
     return null;
@@ -24,7 +34,6 @@ function getCurrentUser() {
   }
   return null;
 }
-
 function requireRole(role) {
   var user = getCurrentUser();
   if (user === null) { window.location.href = "login.html"; return null; }
@@ -37,57 +46,155 @@ function getDashboardPage(role) {
   return "user-dashboard.html";
 }
 function logout() {
-  localStorage.removeItem(KEYS.session);
+  if (typeof KEYS !== "undefined") { localStorage.removeItem(KEYS.session); }
   window.location.href = "login.html";
 }
 
-// --- Helper kecil ---
-function generateId(prefix) { return prefix + Date.now(); }
-function getToday() { return new Date().toISOString().slice(0, 10); }
+function generateId(prefix) {
+  idCounter++;
+  return prefix + Date.now() + "-" + idCounter;
+}
+function getToday() {
+  var d = new Date();
+  var bulan = String(d.getMonth() + 1);
+  var hari = String(d.getDate());
+  if (bulan.length < 2) { bulan = "0" + bulan; }
+  if (hari.length < 2) { hari = "0" + hari; }
+  return d.getFullYear() + "-" + bulan + "-" + hari;
+}
 function formatDate(text) {
   var bulan = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
   var d = new Date(text);
+  if (!text || isNaN(d.getTime())) { return "-"; }
   return d.getDate() + " " + bulan[d.getMonth()] + " " + d.getFullYear();
 }
-// Cegah teks pengguna dianggap kode HTML
 function escapeHtml(text) {
   var div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
+  div.textContent = text === null || text === undefined ? "" : String(text);
+  return div.innerHTML.replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+function getQueryParam(name) {
+  return new URLSearchParams(window.location.search).get(name);
 }
 function statusBadge(status) {
-  return '<span class="badge badge-' + status.toLowerCase() + '">' + status + '</span>';
+  var s = status || "Menunggu";
+  return '<span class="badge badge-' + escapeHtml(s.toLowerCase()) + '">' + escapeHtml(s) + '</span>';
 }
 function priorityBadge(priority) {
-  return '<span class="badge badge-' + priority.toLowerCase() + '">' + priority + '</span>';
+  if (!priority) { return '<span class="muted">-</span>'; }
+  return '<span class="badge badge-' + escapeHtml(priority.toLowerCase()) + '">' + escapeHtml(priority) + '</span>';
+}
+function getReportLocation(report) {
+  if (report.location) { return report.location; }
+  var parts = [];
+  if (report.building) { parts.push(report.building); }
+  if (report.room) { parts.push(report.room); }
+  return parts.length > 0 ? parts.join(", ") : "-";
 }
 
-// Nomor laporan baru, contoh: LRD-0244
 function generateReportId() {
   var reports = getData(KEYS.reports);
   var terbesar = 0;
   for (var i = 0; i < reports.length; i++) {
-    var angka = parseInt(reports[i].id.replace("LRD-", ""));
-    if (angka > terbesar) { terbesar = angka; }
+    var angka = parseInt(String(reports[i].id).replace("LRD-", ""), 10);
+    if (!isNaN(angka) && angka > terbesar) { terbesar = angka; }
   }
   var baru = String(terbesar + 1);
   while (baru.length < 4) { baru = "0" + baru; }
   return "LRD-" + baru;
 }
 
-// --- Fungsi bersama untuk riwayat & notifikasi ---
+function getReportById(id) {
+  if (id === null || id === undefined) { return null; }
+  var reports = getData(KEYS.reports);
+  for (var i = 0; i < reports.length; i++) {
+    if (String(reports[i].id) === String(id)) { return reports[i]; }
+  }
+  return null;
+}
+function updateReport(id, changes) {
+  var reports = getData(KEYS.reports);
+  for (var i = 0; i < reports.length; i++) {
+    if (String(reports[i].id) === String(id)) {
+      for (var key in changes) { reports[i][key] = changes[key]; }
+      saveData(KEYS.reports, reports);
+      return reports[i];
+    }
+  }
+  return null;
+}
+
+function getUserById(id) {
+  if (id === null || id === undefined) { return null; }
+  var users = getData(KEYS.users);
+  for (var i = 0; i < users.length; i++) {
+    if (users[i].id === id) { return users[i]; }
+  }
+  return null;
+}
+function getTechnicians() {
+  var users = getData(KEYS.users);
+  var hasil = [];
+  for (var i = 0; i < users.length; i++) {
+    if (users[i].role === "teknisi") { hasil.push(users[i]); }
+  }
+  return hasil;
+}
+
 function addStatusHistory(reportId, status, note, actorId) {
   var history = getData(KEYS.history);
   history.push({ reportId: reportId, status: status, note: note, date: getToday(), actorId: actorId });
   saveData(KEYS.history, history);
 }
-function addNotification(userId, title, message) {
+function addNotification(userId, title, message, reportId) {
+  if (userId === null || userId === undefined) { return; }
   var list = getData(KEYS.notifications);
-  list.push({ id: generateId("n"), userId: userId, title: title, message: message, date: getToday(), isRead: false });
+  list.push({ id: generateId("n"), userId: userId, title: title, message: message, date: getToday(), isRead: false, reportId: reportId || null });
   saveData(KEYS.notifications, list);
 }
+function notifyRole(role, title, message, reportId) {
+  var users = getData(KEYS.users);
+  for (var i = 0; i < users.length; i++) {
+    if (users[i].role === role) { addNotification(users[i].id, title, message, reportId); }
+  }
+}
 
-// --- Toast: showToast("Berhasil disimpan", "success") | "error" | "info" ---
+function assignTechnician(reportId, techId, note, actorId) {
+  var report = getReportById(reportId);
+  var tech = getUserById(techId);
+  if (report === null || tech === null) { return false; }
+  var changes = { technicianId: tech.id };
+  var status = report.status;
+  if (status === "Menunggu") {
+    status = "Diverifikasi";
+    changes.status = status;
+  }
+  if (note) { changes.adminNote = note; }
+  updateReport(reportId, changes);
+  addStatusHistory(reportId, status, "Ditugaskan kepada " + tech.name + (note ? ". " + note : ""), actorId);
+  addNotification(tech.id, "Tugas perbaikan baru", "Kamu ditugaskan menangani " + reportId + ": " + report.title + ".", reportId);
+  addNotification(report.userId, "Laporan ditugaskan", reportId + " ditangani oleh " + tech.name + ".", reportId);
+  return true;
+}
+
+function ensureTechnicians() {
+  if (typeof KEYS === "undefined") { return; }
+  var users = getData(KEYS.users);
+  if (users.length === 0) { return; }
+  for (var i = 0; i < users.length; i++) {
+    if (users[i].role === "teknisi") { return; }
+  }
+  users.push({ id: "u-teknisi1", name: "Agus Septio", email: "agus@rusdi.ac.id", password: "teknisi123", phone: "0812-3456-7890", role: "teknisi", specialization: "Kelistrikan & AC" });
+  users.push({ id: "u-teknisi2", name: "Budi Santoso", email: "budi.teknisi@rusdi.ac.id", password: "teknisi123", phone: "0821-9876-5432", role: "teknisi", specialization: "Plumbing" });
+  saveData(KEYS.users, users);
+}
+function ensureLocations() {
+  var key = storageKey("locations");
+  if (localStorage.getItem(key) === null) { saveData(key, DEFAULT_LOCATIONS); }
+}
+ensureTechnicians();
+ensureLocations();
+
 function showToast(message, type) {
   var box = document.querySelector("#toast-box");
   if (box === null) {
@@ -102,20 +209,17 @@ function showToast(message, type) {
   setTimeout(function () { toast.remove(); }, 3000);
 }
 
-// --- Modal konfirmasi: showConfirm("Hapus data?", function () { ... }) ---
 function showConfirm(message, onYes) {
   var bg = document.createElement("div");
   bg.className = "modal-bg";
-  bg.innerHTML = '<div class="modal-box"><p class="font-semibold text-slate-800 mb-5">' + message + '</p>' +
-    '<div class="flex gap-3 justify-end"><button class="btn bg-slate-200" id="confirm-no">Batal</button>' +
+  bg.innerHTML = '<div class="modal-box"><p>' + escapeHtml(message) + '</p>' +
+    '<div class="modal-actions"><button class="btn btn-light" id="confirm-no">Batal</button>' +
     '<button class="btn btn-danger" id="confirm-yes">Ya, lanjutkan</button></div></div>';
   document.body.appendChild(bg);
   bg.querySelector("#confirm-no").addEventListener("click", function () { bg.remove(); });
   bg.querySelector("#confirm-yes").addEventListener("click", function () { bg.remove(); onYes(); });
 }
 
-// --- Navbar publik: <div id="navbar" data-active="home"></div> ---
-// Layar lebar (lg ke atas, 1024px+): menu di tengah, huruf lebih besar di layar 1280px+.
 function renderNavbar() {
   var box = document.querySelector("#navbar");
   if (box === null) { return; }
@@ -129,14 +233,11 @@ function renderNavbar() {
     ["buat", "create-report.html", "Buat Laporan"],
     ["bantuan", "help.html", "Bantuan"]
   ];
-  
-  var linksDesktop = "";
-  var linksMobile = "";
+
+  var links = "";
   for (var i = 0; i < menu.length; i++) {
     var cls = menu[i][0] === active ? "nav-link active" : "nav-link";
-    var link = '<a href="' + menu[i][1] + '" class="' + cls + '">' + menu[i][2] + '</a>';
-    linksDesktop += link;
-    linksMobile += link;
+    links += '<a href="' + menu[i][1] + '" class="' + cls + '">' + menu[i][2] + '</a>';
   }
 
   var tombolDesktop = '<a href="login.html" class="nav-login">Masuk</a>' +
@@ -150,52 +251,70 @@ function renderNavbar() {
                    '<button class="btn-logout btn btn-primary">Keluar</button>';
   }
 
-  // Gaya navbar ada di css/style.css bagian NAVBAR PUBLIK
   box.innerHTML = '<nav class="navbar"><div class="navbar-inner max-w-6xl mx-auto px-6">' +
     '<a href="index.html" class="nav-logo">Lapor<span>RusDi</span></a>' +
-    '<div class="nav-menu">' + linksDesktop + '</div>' +
+    '<div class="nav-menu">' + links + '</div>' +
     '<div class="nav-right">' + tombolDesktop + '</div>' +
     '<button id="btn-menu" class="nav-burger" aria-label="Buka menu">' +
     '<svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24">' +
     '<path d="M4 6h16M4 12h16M4 18h16"/></svg></button></div>' +
-    '<div id="menu-mobile" class="menu-mobile">' + linksMobile +
+    '<div id="menu-mobile" class="menu-mobile">' + links +
     '<div class="menu-mobile-actions">' + tombolMobile + '</div></div></nav>';
 
-  // Buka/tutup menu HP (class "open" menampilkan menu)
   document.querySelector("#btn-menu").addEventListener("click", function () {
     document.querySelector("#menu-mobile").classList.toggle("open");
   });
-  // Tombol keluar (ada 2: desktop & HP)
   var tombolKeluar = document.querySelectorAll(".btn-logout");
   for (var j = 0; j < tombolKeluar.length; j++) {
     tombolKeluar[j].addEventListener("click", logout);
   }
 }
 
-// --- Sidebar dashboard (dipakai Anggota 2-4): <div id="sidebar" data-active="reports.html"></div> ---
 function renderSidebar() {
   var box = document.querySelector("#sidebar");
   var user = getCurrentUser();
   if (box === null || user === null) { return; }
   var menus = {
-    pelapor: [["user-dashboard.html", "Dashboard"], ["create-report.html", "Buat Laporan"], ["reports.html", "Laporan Saya"], ["notifications.html", "Notifikasi"], ["profile.html", "Profil"]],
+    pelapor: [
+      ["user-dashboard.html", "Dashboard"],
+      ["create-report.html", "Buat Laporan"],
+      ["reports.html", "Daftar Laporan"],
+      ["notifications.html", "Notifikasi"],
+      ["profile.html", "Profil"],
+      ["help.html", "Bantuan"]
+    ],
     admin: [
       ["admin-dashboard.html", "Dashboard"],
       ["admin-reports.html", "Kelola Laporan"],
       ["admin-technicians.html", "Teknisi"],
       ["admin-settings.html", "Kategori & Lokasi"],
+      ["notifications.html", "Notifikasi"],
       ["profile.html", "Profil"],
       ["page-testing.html", "Pengujian"],
       ["help.html", "Bantuan"]
     ],
-    teknisi: [["technician-dashboard.html", "Dashboard"], ["profile.html", "Profil"]]
+    teknisi: [
+      ["technician-dashboard.html", "Dashboard"],
+      ["notifications.html", "Notifikasi"],
+      ["profile.html", "Profil"],
+      ["help.html", "Bantuan"]
+    ]
   };
+  var list = menus[user.role] || menus.pelapor;
+  var belumDibaca = 0;
+  var semuaNotif = getData(KEYS.notifications);
+  for (var n = 0; n < semuaNotif.length; n++) {
+    if (semuaNotif[n].userId === user.id && !semuaNotif[n].isRead) { belumDibaca++; }
+  }
   var active = box.getAttribute("data-active");
-  var html = '<div class="sidebar"><a href="index.html" class="p-0! text-2xl font-extrabold text-white mb-8">Lapor<span class="text-[#3B82F6]">RusDi</span></a>' +
-             '<p class="text-sm text-slate-400 mb-6">' + escapeHtml(user.name) + ' (' + user.role + ')</p>';
-  var list = menus[user.role];
+  var html = '<div class="sidebar"><a href="index.html" class="sidebar-logo">Lapor<span>RusDi</span></a>' +
+             '<p class="sidebar-user">' + escapeHtml(user.name) + ' (' + escapeHtml(user.role) + ')</p>';
   for (var i = 0; i < list.length; i++) {
-    html += '<a href="' + list[i][0] + '"' + (list[i][0] === active ? ' class="active"' : '') + '>' + list[i][1] + '</a>';
+    var label = list[i][1];
+    if (list[i][0] === "notifications.html" && belumDibaca > 0) {
+      label += ' <span class="badge badge-darurat" style="margin-left:6px">' + belumDibaca + '</span>';
+    }
+    html += '<a href="' + list[i][0] + '"' + (list[i][0] === active ? ' class="active"' : '') + '>' + label + '</a>';
   }
   html += '<a href="#" id="sidebar-logout">Keluar</a></div>';
   box.innerHTML = html;
@@ -218,7 +337,8 @@ function renderFooter() {
   document.querySelector("#btn-reset").addEventListener("click", function (e) {
     e.preventDefault();
     showConfirm("Semua data akan dikembalikan ke data demo awal. Lanjutkan?", function () {
-      resetDemoData();
+      if (typeof resetDemoData === "function") { resetDemoData(); }
+      localStorage.removeItem(storageKey("locations"));
       showToast("Data demo berhasil direset.", "success");
       setTimeout(function () { window.location.href = "index.html"; }, 800);
     });

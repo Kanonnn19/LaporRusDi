@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kelola Laporan - LaporRusDi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <div id="sidebar" data-active="admin-reports.html"></div>
+
+    <main class="app-main">
+      <div class="page-wrap">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Kelola Laporan</h1>
+            <p class="page-sub">Verifikasi laporan, atur prioritas, dan tugaskan teknisi.</p>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <!-- Daftar laporan -->
+          <div class="card">
+            <div class="filter-row">
+              <div>
+                <label class="form-label" for="cari">Cari</label>
+                <input id="cari" class="form-input" placeholder="ID, judul, atau lokasi...">
+              </div>
+              <div>
+                <label class="form-label" for="filter-status">Status</label>
+                <select id="filter-status" class="form-input">
+                  <option value="">Semua status</option>
+                  <option>Menunggu</option>
+                  <option value="aktif">Diverifikasi &amp; Diproses</option>
+                  <option>Diverifikasi</option>
+                  <option>Diproses</option>
+                  <option>Selesai</option>
+                  <option>Ditolak</option>
+                </select>
+              </div>
+              <button type="button" id="btn-reset" class="btn btn-light">Reset</button>
+            </div>
+
+            <div class="tbl-wrap">
+              <table class="tbl">
+                <thead>
+                  <tr><th>ID</th><th>Judul</th><th>Prioritas</th><th>Status</th><th></th></tr>
+                </thead>
+                <tbody id="tabel-laporan"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Panel kelola -->
+          <div class="stack">
+            <div id="panel-kosong" class="card empty-state">
+              Pilih laporan dari daftar untuk mengelolanya.
+            </div>
+
+            <div id="panel-kelola" class="card is-hidden">
+              <p class="muted">Tiket <span id="p-id"></span> &middot; <span id="p-tanggal"></span></p>
+              <h2 class="section-title" id="p-judul" style="margin-bottom:4px"></h2>
+              <p class="muted" style="font-size:14px" id="p-lokasi"></p>
+              <p style="font-size:14px;margin:12px 0" id="p-deskripsi"></p>
+              <p class="muted" style="font-size:13px;margin-bottom:16px">
+                Pelapor: <strong id="p-pelapor"></strong> &middot; Kategori: <strong id="p-kategori"></strong>
+              </p>
+
+              <form id="form-kelola">
+                <div class="grid-2 field">
+                  <div>
+                    <label class="form-label" for="f-status">Status</label>
+                    <select id="f-status" class="form-input">
+                      <option>Menunggu</option>
+                      <option>Diverifikasi</option>
+                      <option>Diproses</option>
+                      <option>Selesai</option>
+                      <option>Ditolak</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="form-label" for="f-prioritas">Prioritas</label>
+                    <select id="f-prioritas" class="form-input">
+                      <option value="">Belum ditentukan</option>
+                      <option>Rendah</option>
+                      <option>Sedang</option>
+                      <option>Tinggi</option>
+                      <option>Darurat</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label class="form-label" for="f-teknisi">Teknisi penanggung jawab</label>
+                  <select id="f-teknisi" class="form-input"></select>
+                </div>
+
+                <div class="field">
+                  <label class="form-label" for="f-catatan">Catatan admin / alasan penolakan</label>
+                  <textarea id="f-catatan" rows="3" class="form-input" placeholder="Instruksi untuk teknisi atau alasan jika ditolak"></textarea>
+                </div>
+
+                <div class="row-actions">
+                  <button type="submit" class="btn btn-primary">Simpan perubahan</button>
+                  <a id="p-detail" href="#" class="btn btn-light">Lihat detail</a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    var admin = requireRole("admin");
+    var terpilih = null;
+
+    function ambilLaporan() {
+      var semua = getData(KEYS.reports);
+      var kata = document.getElementById("cari").value.trim().toLowerCase();
+      var status = document.getElementById("filter-status").value;
+      var hasil = [];
+      for (var i = 0; i < semua.length; i++) {
+        var r = semua[i];
+        var teks = (r.id + " " + (r.title || "") + " " + getReportLocation(r)).toLowerCase();
+        if (kata !== "" && teks.indexOf(kata) === -1) { continue; }
+        if (status === "aktif") { if (r.status !== "Diverifikasi" && r.status !== "Diproses") { continue; } }
+        else if (status !== "" && r.status !== status) { continue; }
+        hasil.push(r);
+      }
+      hasil.sort(function (a, b) { return a.id < b.id ? 1 : -1; });
+      return hasil;
+    }
+
+    function tampilkanTabel() {
+      var daftar = ambilLaporan();
+      var html = "";
+      for (var i = 0; i < daftar.length; i++) {
+        var r = daftar[i];
+        var aktif = terpilih === r.id ? ' style="background:#EFF6FF"' : "";
+        html += '<tr' + aktif + '>' +
+          '<td class="font-semibold">' + escapeHtml(r.id) + '</td>' +
+          '<td>' + escapeHtml(r.title || "-") + '<div class="muted" style="font-size:12px">' + escapeHtml(getReportLocation(r)) + '</div></td>' +
+          '<td>' + priorityBadge(r.priority) + '</td>' +
+          '<td>' + statusBadge(r.status) + '</td>' +
+          '<td><button type="button" class="btn btn-primary btn-sm" style="padding:6px 14px;font-size:13px" data-id="' + escapeHtml(r.id) + '">Kelola</button></td></tr>';
+      }
+      if (html === "") {
+        html = '<tr><td colspan="5"><div class="empty-state">Tidak ada laporan yang cocok.</div></td></tr>';
+      }
+      document.getElementById("tabel-laporan").innerHTML = html;
+    }
+
+    function isiPilihanTeknisi() {
+      var teknisi = getTechnicians();
+      var html = '<option value="">- Belum ditugaskan -</option>';
+      for (var i = 0; i < teknisi.length; i++) {
+        var spes = teknisi[i].specialization ? " (" + teknisi[i].specialization + ")" : "";
+        html += '<option value="' + escapeHtml(teknisi[i].id) + '">' + escapeHtml(teknisi[i].name + spes) + '</option>';
+      }
+      document.getElementById("f-teknisi").innerHTML = html;
+    }
+
+    function bukaPanel(id) {
+      var r = getReportById(id);
+      if (r === null) { return; }
+      terpilih = r.id;
+      document.getElementById("panel-kosong").classList.add("is-hidden");
+      document.getElementById("panel-kelola").classList.remove("is-hidden");
+      document.getElementById("p-id").textContent = r.id;
+      document.getElementById("p-tanggal").textContent = formatDate(r.date);
+      document.getElementById("p-judul").textContent = r.title || "-";
+      document.getElementById("p-lokasi").textContent = "Lokasi: " + getReportLocation(r);
+      document.getElementById("p-deskripsi").textContent = r.description || "Tidak ada deskripsi.";
+      document.getElementById("p-pelapor").textContent = r.reporterName || "-";
+      document.getElementById("p-kategori").textContent = r.category || "-";
+      document.getElementById("f-status").value = r.status || "Menunggu";
+      document.getElementById("f-prioritas").value = r.priority || "";
+      document.getElementById("f-teknisi").value = r.technicianId || "";
+      document.getElementById("f-catatan").value = r.adminNote || "";
+      document.getElementById("p-detail").href = "report-detail.html?id=" + encodeURIComponent(r.id);
+      tampilkanTabel();
+    }
+
+    function simpanPerubahan(e) {
+      e.preventDefault();
+      var r = getReportById(terpilih);
+      if (r === null) { return; }
+
+      var statusBaru = document.getElementById("f-status").value;
+      var prioritas = document.getElementById("f-prioritas").value;
+      var teknisiId = document.getElementById("f-teknisi").value;
+      var catatan = document.getElementById("f-catatan").value.trim();
+
+      if (statusBaru === "Ditolak" && catatan === "") {
+        showToast("Isi alasan penolakan di kolom catatan.", "error");
+        document.getElementById("f-catatan").focus();
+        return;
+      }
+      if ((statusBaru === "Diproses" || statusBaru === "Selesai") && teknisiId === "") {
+        showToast("Tugaskan teknisi sebelum status Diproses atau Selesai.", "error");
+        return;
+      }
+      if (statusBaru === "Diverifikasi" && prioritas === "") {
+        showToast("Tentukan prioritas saat memverifikasi laporan.", "error");
+        return;
+      }
+
+      // 1) Simpan prioritas dan catatan
+      updateReport(r.id, { priority: prioritas, adminNote: catatan });
+
+      // 2) Tugaskan teknisi bila berubah (fungsi ini juga mengubah Menunggu -> Diverifikasi)
+      var statusSekarang = r.status;
+      if (teknisiId !== "" && teknisiId !== r.technicianId) {
+        assignTechnician(r.id, teknisiId, catatan, admin.id);
+        statusSekarang = getReportById(r.id).status;
+      } else if (teknisiId === "" && r.technicianId) {
+        updateReport(r.id, { technicianId: null });
+      }
+
+      // 3) Ubah status bila masih berbeda
+      if (statusBaru !== statusSekarang && !(r.status === "Menunggu" && statusBaru === "Menunggu")) {
+        var perubahan = { status: statusBaru, completedDate: statusBaru === "Selesai" ? getToday() : null };
+        updateReport(r.id, perubahan);
+        var teks = catatan !== "" ? catatan : "Status diperbarui oleh admin.";
+        addStatusHistory(r.id, statusBaru, teks, admin.id);
+        addNotification(r.userId, "Status laporan diperbarui", r.id + " kini berstatus " + statusBaru + ".", r.id);
+      }
+
+      showToast("Perubahan berhasil disimpan.", "success");
+      bukaPanel(r.id);
+    }
+
+    if (admin !== null) {
+      isiPilihanTeknisi();
+      tampilkanTabel();
+
+      document.getElementById("cari").addEventListener("input", tampilkanTabel);
+      document.getElementById("filter-status").addEventListener("change", tampilkanTabel);
+      document.getElementById("btn-reset").addEventListener("click", function () {
+        document.getElementById("cari").value = "";
+        document.getElementById("filter-status").value = "";
+        tampilkanTabel();
+      });
+      document.getElementById("tabel-laporan").addEventListener("click", function (e) {
+        var tombol = e.target.closest("button[data-id]");
+        if (tombol !== null) { bukaPanel(tombol.getAttribute("data-id")); }
+      });
+      document.getElementById("form-kelola").addEventListener("submit", simpanPerubahan);
+
+      var statusUrl = getQueryParam("status");
+      if (statusUrl !== null) { document.getElementById("filter-status").value = statusUrl; tampilkanTabel(); }
+
+      var idUrl = getQueryParam("id");
+      if (idUrl !== null) { bukaPanel(idUrl); }
+    }
+  </script>
+</body>
+</html>

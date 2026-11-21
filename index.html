@@ -12,7 +12,6 @@
 <body class="bg-white text-slate-800">
   <div id="navbar" data-active="home"></div>
 
-  <!-- HERO (gaya bagian HERO BERANDA) -->
   <section class="hero">
     <div class="hero-grid max-w-6xl mx-auto px-6">
       <div>
@@ -48,7 +47,6 @@
     </div>
   </section>
 
-  <!--STATISTIK (menimpa bagian bawah hero) -->
   <section class="stats-overlap max-w-6xl mx-auto px-6">
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
       <div class="card flex items-center gap-4"><i data-lucide="clipboard-list" class="stat-icon icon-blue"></i>
@@ -62,7 +60,6 @@
     </div>
   </section>
 
-  
   <section id="cara-kerja" class="py-20">
     <div class="max-w-6xl mx-auto px-6">
       <h2 class="text-3xl font-extrabold text-[#151E32]">Dari laporan sampai perbaikan selesai</h2>
@@ -80,7 +77,6 @@
     </div>
   </section>
 
-  
   <section id="fitur" class="bg-[#F8FAFC] py-20">
     <div class="max-w-6xl mx-auto px-6">
       <h2 class="text-3xl font-extrabold text-[#151E32]">Yang bisa kamu lakukan</h2>
@@ -95,7 +91,6 @@
     </div>
   </section>
 
-  <!-- ===== LAPORAN TERBARU ===== -->
   <section class="py-20">
     <div class="max-w-6xl mx-auto px-6">
       <div class="flex justify-between items-end">
@@ -106,7 +101,6 @@
     </div>
   </section>
 
-  <!--  KATEGORI  -->
   <section class="bg-[#F8FAFC] py-20">
     <div class="max-w-6xl mx-auto px-6">
       <h2 class="text-3xl font-extrabold text-[#151E32]">Kerusakan apa yang bisa dilaporkan?</h2>
@@ -115,7 +109,6 @@
     </div>
   </section>
 
-  <!-- ===== UNTUK SIAPA ===== -->
   <section id="tentang" class="bg-[#151E32] text-white py-20">
     <div class="max-w-6xl mx-auto px-6">
       <h2 class="text-3xl font-extrabold">Satu website, tiga peran</h2>
@@ -131,7 +124,6 @@
     </div>
   </section>
 
-  <!-- ===== FAQ ===== -->
   <section id="faq" class="py-20">
     <div class="max-w-3xl mx-auto px-6">
       <h2 class="text-3xl font-extrabold text-[#151E32]">Pertanyaan umum</h2>
@@ -144,25 +136,23 @@
     </div>
   </section>
 
-  <!-- ===== AJAKAN ===== -->
   <section class="bg-[#151E32] py-16 text-center text-white px-6">
     <h2 class="text-3xl font-extrabold">Lihat sesuatu yang rusak?</h2>
     <p class="text-slate-300 mt-3">Satu laporan darimu membantu seluruh civitas kampus.</p>
     <a href="create-report.html" class="btn btn-primary mt-6">Buat Laporan Sekarang</a>
   </section>
 
-  <!-- Footer dihapus: <div id="footer"></div> -->
+  <div id="footer"></div>
 
   <script src="js/data.js"></script>
   <script src="js/common.js"></script>
   <script>
     var reports = getData(KEYS.reports);
 
-    // 1. Hitung statistik
     var menunggu = 0, diproses = 0, selesai = 0;
     for (var i = 0; i < reports.length; i++) {
       if (reports[i].status === "Menunggu") { menunggu++; }
-      if (reports[i].status === "Diproses") { diproses++; }
+      if (reports[i].status === "Diproses" || reports[i].status === "Diverifikasi") { diproses++; }
       if (reports[i].status === "Selesai") { selesai++; }
     }
     document.querySelector("#stat-total").textContent = reports.length;
@@ -170,21 +160,19 @@
     document.querySelector("#stat-proses").textContent = diproses;
     document.querySelector("#stat-selesai").textContent = selesai;
 
-    // 2. Laporan terbaru (urutkan ID terbesar dulu, ambil 4)
     var urut = reports.slice();
     urut.sort(function (a, b) { return a.id < b.id ? 1 : -1; });
     var html = "";
     for (var j = 0; j < urut.length && j < 4; j++) {
       var r = urut[j];
-      html += '<a href="report-detail.html?id=' + r.id + '" class="card border border-slate-100 hover:border-[#3B82F6] block">' +
-        '<div class="flex justify-between items-center"><span class="text-slate-400 text-sm">' + r.id + '</span>' + statusBadge(r.status) + '</div>' +
+      html += '<a href="report-detail.html?id=' + encodeURIComponent(r.id) + '" class="card border border-slate-100 hover:border-[#3B82F6] block">' +
+        '<div class="flex justify-between items-center"><span class="text-slate-400 text-sm">' + escapeHtml(r.id) + '</span>' + statusBadge(r.status) + '</div>' +
         '<p class="font-bold text-[#151E32] mt-1">' + escapeHtml(r.title) + '</p>' +
-        '<p class="text-slate-500 text-sm mt-1">' + escapeHtml(r.building) + ', ' + escapeHtml(r.room) + ' - ' + formatDate(r.date) + '</p></a>';
+        '<p class="text-slate-500 text-sm mt-1">' + escapeHtml(getReportLocation(r)) + ' - ' + formatDate(r.date) + '</p></a>';
     }
     if (html === "") { html = '<div class="empty-state md:col-span-2">Belum ada laporan. Jadilah yang pertama melapor.</div>'; }
     document.querySelector("#recent-list").innerHTML = html;
 
-    // 3. Kartu kategori + jumlah laporan
     var icons = { "AC": "snowflake", "Listrik": "zap", "Air": "droplets", "Furnitur": "armchair",
                   "Bangunan": "building-2", "Jaringan": "wifi", "Peralatan Lab": "flask-conical" };
     var categories = getData(KEYS.categories);
@@ -202,7 +190,6 @@
     }
     document.querySelector("#category-list").innerHTML = html2;
 
-    // 4. Tampilkan semua ikon Lucide (dipanggil terakhir)
     lucide.createIcons();
   </script>
 </body>

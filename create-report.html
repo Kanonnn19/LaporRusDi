@@ -14,23 +14,19 @@
     .judul-halaman { color: var(--navy); margin: 0 0 6px; }
     .sub-judul { color: #64748B; margin: 0 0 24px; }
 
-    /* Kotak form dengan garis warna di atas */
     .kotak-form { max-width: 640px; border-top: 5px solid var(--blue); }
     .kolom { margin-bottom: 18px; }
     textarea { min-height: 120px; }
 
-    /* Dua kolom berdampingan */
     .dua-kolom { display: flex; gap: 16px; }
     .dua-kolom .kolom { flex: 1; }
 
-    /* Efek saat kolom diklik */
     .form-input:focus {
       outline: none;
       border-color: var(--blue);
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
     }
 
-    /* Penghitung karakter */
     #hitung { text-align: right; font-size: 13px; color: #64748B; margin-top: 4px; }
 
     .tombol-baris { display: flex; gap: 12px; margin-top: 8px; }
@@ -63,12 +59,6 @@
               <label class="form-label" for="kategori">Kategori</label>
               <select id="kategori" class="form-input">
                 <option value="">Pilih kategori</option>
-                <option>Listrik</option>
-                <option>Air</option>
-                <option>AC</option>
-                <option>Furnitur</option>
-                <option>Kebersihan</option>
-                <option>Lainnya</option>
               </select>
             </div>
 
@@ -86,7 +76,8 @@
 
           <div class="kolom">
             <label class="form-label" for="lokasi">Lokasi</label>
-            <input type="text" id="lokasi" class="form-input" placeholder="Contoh: Gedung A lantai 2">
+            <input type="text" id="lokasi" class="form-input" list="daftar-lokasi" autocomplete="off" placeholder="Contoh: Gedung A lantai 2">
+            <datalist id="daftar-lokasi"></datalist>
           </div>
 
           <div class="kolom">
@@ -97,7 +88,7 @@
 
           <div class="tombol-baris">
             <button type="submit" class="btn btn-primary">Kirim laporan</button>
-            <a href="user-dashboard.html" class="btn">Batal</a>
+            <a href="user-dashboard.html" class="btn btn-light">Batal</a>
           </div>
         </form>
       </div>
@@ -107,39 +98,48 @@
   <script src="js/data.js"></script>
   <script src="js/common.js"></script>
   <script>
-    // Cek login. Kalau belum login, otomatis ke halaman login
     var user = requireRole("pelapor");
 
-    // Penghitung karakter deskripsi
+    var daftarKategori = getData(KEYS.categories);
+    if (daftarKategori.length === 0) { daftarKategori = ["Listrik", "Air", "AC", "Furnitur", "Kebersihan", "Lainnya"]; }
+    var pilihKategori = document.getElementById("kategori");
+    for (var a = 0; a < daftarKategori.length; a++) {
+      var opsiKategori = document.createElement("option");
+      opsiKategori.textContent = daftarKategori[a];
+      pilihKategori.appendChild(opsiKategori);
+    }
+    var daftarLokasi = getData(storageKey("locations"));
+    var datalistLokasi = document.getElementById("daftar-lokasi");
+    for (var b = 0; b < daftarLokasi.length; b++) {
+      var opsiLokasi = document.createElement("option");
+      opsiLokasi.value = daftarLokasi[b];
+      datalistLokasi.appendChild(opsiLokasi);
+    }
+
     document.getElementById("deskripsi").addEventListener("input", function () {
       document.getElementById("hitung").textContent = this.value.length + " / 300";
     });
 
-    // Fungsi kecil: tampilkan peringatan lalu arahkan kursor ke kolom yang salah
     function peringatan(pesan, idKolom) {
       alert(pesan);
       document.getElementById(idKolom).focus();
     }
 
-    // Saat tombol "Kirim laporan" ditekan
     document.getElementById("form-laporan").addEventListener("submit", function (e) {
-      e.preventDefault(); // supaya halaman tidak reload
+      e.preventDefault();
 
-      // Ambil isi form
       var judul = document.getElementById("judul").value.trim();
       var kategori = document.getElementById("kategori").value;
       var lokasi = document.getElementById("lokasi").value.trim();
       var prioritas = document.getElementById("prioritas").value;
       var deskripsi = document.getElementById("deskripsi").value.trim();
 
-      // Cek apakah ada yang kosong
       if (judul === "") { peringatan("Judul harus diisi!", "judul"); return; }
       if (kategori === "") { peringatan("Kategori harus dipilih!", "kategori"); return; }
       if (lokasi === "") { peringatan("Lokasi harus diisi!", "lokasi"); return; }
       if (prioritas === "") { peringatan("Prioritas harus dipilih!", "prioritas"); return; }
       if (deskripsi === "") { peringatan("Deskripsi harus diisi!", "deskripsi"); return; }
 
-      // Buat laporan baru
       var laporanBaru = {
         id: generateReportId(),
         title: judul,
@@ -148,19 +148,18 @@
         description: deskripsi,
         priority: prioritas,
         userId: user.id,
+        reporterName: user.name,
         status: "Menunggu",
         date: getToday()
       };
 
-      // Simpan ke daftar laporan
       var semua = getData(KEYS.reports);
       semua.push(laporanBaru);
       saveData(KEYS.reports, semua);
 
-      // Catat riwayat status laporan
       addStatusHistory(laporanBaru.id, "Menunggu", "Laporan dikirim oleh pelapor.", user.id);
+      notifyRole("admin", "Laporan baru masuk", user.name + " mengirim laporan: " + judul + ".", laporanBaru.id);
 
-      // Pindah ke dashboard
       alert("Laporan berhasil dikirim!");
       window.location.href = "user-dashboard.html";
     });

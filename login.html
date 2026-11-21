@@ -53,6 +53,7 @@
         <div class="demo-btns">
           <button type="button" data-email="budi@mahasiswa.ac.id" data-pass="budi123">Pelapor</button>
           <button type="button" data-email="admin@rusdi.ac.id" data-pass="admin123">Admin</button>
+          <button type="button" data-email="agus@rusdi.ac.id" data-pass="teknisi123">Teknisi</button>
         </div>
       </div>
     </div>
@@ -63,7 +64,6 @@
   <script src="js/data.js"></script>
   <script src="js/common.js"></script>
   <script>
-    // Kalau sudah login, langsung ke dashboard
     var sudah = getCurrentUser();
     if (sudah !== null) { window.location.href = getDashboardPage(sudah.role); }
 
@@ -72,7 +72,6 @@
       document.getElementById(id).classList.toggle("error", pesan !== "");
     }
 
-    // Tombol akun demo
     var demoButtons = document.querySelectorAll(".demo-btns button");
     for (var i = 0; i < demoButtons.length; i++) {
       demoButtons[i].addEventListener("click", function () {

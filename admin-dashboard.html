@@ -39,29 +39,27 @@
           <a href="admin-reports.html" class="btn btn-primary">Kelola Laporan</a>
         </div>
 
-        <!-- Kartu statistik -->
         <section class="grid-stat" style="margin-top:32px">
-          <div class="card flex items-center gap-4">
+          <a href="admin-reports.html" class="card flex items-center gap-4">
             <div class="stat-icon-box" style="background:#DBEAFE"><i data-lucide="clipboard-list" class="icon-blue"></i></div>
             <div><p class="text-slate-500 text-sm">Total Laporan</p><p class="stat-num" id="stat-total">0</p></div>
-          </div>
-          <div class="card flex items-center gap-4">
+          </a>
+          <a href="admin-reports.html?status=Menunggu" class="card flex items-center gap-4">
             <div class="stat-icon-box" style="background:#FEF3C7"><i data-lucide="clock" class="icon-yellow"></i></div>
             <div><p class="text-slate-500 text-sm">Perlu Verifikasi</p><p class="stat-num" id="stat-menunggu">0</p></div>
-          </div>
-          <div class="card flex items-center gap-4">
+          </a>
+          <a href="admin-reports.html?status=aktif" class="card flex items-center gap-4">
             <div class="stat-icon-box" style="background:#DBEAFE"><i data-lucide="wrench" class="icon-blue"></i></div>
             <div><p class="text-slate-500 text-sm">Sedang Diproses</p><p class="stat-num" id="stat-proses">0</p></div>
-          </div>
-          <div class="card flex items-center gap-4">
+          </a>
+          <a href="admin-reports.html?status=Selesai" class="card flex items-center gap-4">
             <div class="stat-icon-box" style="background:#DCFCE7"><i data-lucide="check-circle" class="icon-green"></i></div>
             <div><p class="text-slate-500 text-sm">Selesai</p><p class="stat-num" id="stat-selesai">0</p></div>
-          </div>
+          </a>
         </section>
 
         <section class="grid-two" style="margin-top:24px">
-          
-          <!-- Laporan terbaru -->
+
           <div class="card">
             <div class="flex justify-between items-center mb-4">
               <h2 class="text-xl font-bold">Laporan Terbaru</h2>
@@ -78,14 +76,13 @@
           </div>
 
           <div>
-            <!-- Perlu tindakan -->
+            
             <div class="card">
               <h2 class="text-xl font-bold mb-1">Perlu Tindakan</h2>
               <p class="text-slate-500 text-sm mb-4">Laporan menunggu verifikasi, urut dari yang paling mendesak.</p>
               <ul id="action-list" class="space-y-3"></ul>
             </div>
 
-            <!-- Laporan per kategori -->
             <div class="card" style="margin-top:24px">
               <h2 class="text-xl font-bold mb-4">Laporan per Kategori</h2>
               <div id="category-chart" class="space-y-4"></div>
@@ -104,7 +101,6 @@
     if (user !== null) {
       var reports = getData(KEYS.reports);
 
-      // 1. Statistik
       var menunggu = 0, diproses = 0, selesai = 0;
       for (var i = 0; i < reports.length; i++) {
         if (reports[i].status === "Menunggu") { menunggu++; }
@@ -116,7 +112,6 @@
       document.querySelector("#stat-proses").textContent = diproses;
       document.querySelector("#stat-selesai").textContent = selesai;
 
-      // 2. Laporan terbaru (ID terbesar dulu, ambil 6)
       var urut = reports.slice();
       urut.sort(function (a, b) { return a.id < b.id ? 1 : -1; });
       var html = "";
@@ -125,7 +120,7 @@
         html += '<tr>' +
           '<td><a href="report-detail.html?id=' + encodeURIComponent(r.id) + '" class="link-blue">' + escapeHtml(r.id) + '</a></td>' +
           '<td class="font-semibold">' + escapeHtml(r.title || "-") + '</td>' +
-          '<td class="text-slate-500">' + escapeHtml((r.building || "-") + (r.room ? ", " + r.room : "")) + '</td>' +
+          '<td class="text-slate-500">' + escapeHtml(getReportLocation(r)) + '</td>' +
           '<td>' + (r.priority ? priorityBadge(r.priority) : '<span class="text-slate-400">-</span>') + '</td>' +
           '<td>' + statusBadge(r.status) + '</td></tr>';
       }
@@ -134,7 +129,6 @@
       }
       document.querySelector("#recent-body").innerHTML = html;
 
-      // 3. Perlu tindakan: status Menunggu, prioritas tertinggi dulu
       var bobot = { "Darurat": 4, "Tinggi": 3, "Sedang": 2, "Rendah": 1 };
       var antre = [];
       for (var a = 0; a < reports.length; a++) {
@@ -158,7 +152,6 @@
       }
       document.querySelector("#action-list").innerHTML = html2;
 
-      // 4. Grafik batang per kategori
       var categories = getData(KEYS.categories);
       var hitung = {};
       for (var c = 0; c < categories.length; c++) { hitung[categories[c]] = 0; }

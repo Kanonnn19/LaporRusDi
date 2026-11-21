@@ -60,8 +60,8 @@
     } else {
       renderSidebar();
 
-      var categoryKey = "laporrusdi_categories";
-      var locationKey = "laporrusdi_locations";
+      var categoryKey = KEYS.categories;
+      var locationKey = storageKey("locations");
 
       function readList(key) {
         try {

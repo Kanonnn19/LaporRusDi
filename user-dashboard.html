@@ -11,7 +11,6 @@
     .halaman { display: flex; min-height: 100vh; background: var(--light-bg); }
     .isi { flex: 1; padding: 32px; }
 
-    /* Banner sapaan di bagian atas */
     .banner {
       background: linear-gradient(135deg, var(--navy), var(--blue));
       color: white;
@@ -37,7 +36,6 @@
     }
     .tombol-banner:hover { transform: translateY(-2px); }
 
-    /* Kartu statistik berwarna */
     .statistik { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
     .statistik .card {
       flex: 1;
@@ -52,7 +50,6 @@
     .angka { font-size: 34px; font-weight: 800; color: var(--navy); }
     .nama-stat { color: #64748B; }
 
-    /* Tabel */
     table { width: 100%; border-collapse: collapse; }
     th { color: #64748B; text-align: left; padding: 10px; border-bottom: 2px solid #E2E8F0; }
     td { padding: 12px 10px; border-bottom: 1px solid #F1F5F9; }
@@ -102,11 +99,9 @@
   <script src="js/data.js"></script>
   <script src="js/common.js"></script>
   <script>
-    // Cek login. Kalau belum login, otomatis ke halaman login
     var user = requireRole("pelapor");
 
     if (user !== null) {
-      // Sapaan sesuai jam
       var jam = new Date().getHours();
       var salam = "Selamat malam";
       if (jam < 11) { salam = "Selamat pagi"; }
@@ -114,7 +109,6 @@
       else if (jam < 18) { salam = "Selamat sore"; }
       document.getElementById("sapaan").textContent = salam + ", " + user.name + "!";
 
-      // Ambil semua laporan, lalu pilih yang milik user ini
       var semua = getData(KEYS.reports);
       var laporanSaya = [];
       for (var i = 0; i < semua.length; i++) {
@@ -123,13 +117,12 @@
         }
       }
 
-      // Hitung jumlah laporan per status
       var menunggu = 0;
       var diproses = 0;
       var selesai = 0;
       for (var j = 0; j < laporanSaya.length; j++) {
         if (laporanSaya[j].status === "Menunggu") { menunggu++; }
-        if (laporanSaya[j].status === "Diproses") { diproses++; }
+        if (laporanSaya[j].status === "Diproses" || laporanSaya[j].status === "Diverifikasi") { diproses++; }
         if (laporanSaya[j].status === "Selesai") { selesai++; }
       }
 
@@ -138,21 +131,19 @@
       document.getElementById("diproses").textContent = diproses;
       document.getElementById("selesai").textContent = selesai;
 
-      // Tampilkan laporan di tabel
       var baris = "";
       for (var k = 0; k < laporanSaya.length; k++) {
         var r = laporanSaya[k];
         baris += "<tr>";
-        baris += "<td>" + r.id + "</td>";
-        baris += "<td>" + r.title + "</td>";
+        baris += "<td>" + escapeHtml(r.id) + "</td>";
+        baris += "<td>" + escapeHtml(r.title) + "</td>";
         baris += "<td>" + statusBadge(r.status) + "</td>";
         baris += "<td>" + formatDate(r.date) + "</td>";
-        baris += "<td><a href='report-detail.html?id=" + r.id + "'>Detail</a></td>";
+        baris += "<td><a href='report-detail.html?id=" + encodeURIComponent(r.id) + "'>Detail</a></td>";
         baris += "</tr>";
       }
       document.getElementById("isi-tabel").innerHTML = baris;
 
-      // Sembunyikan tulisan "Belum ada laporan" kalau sudah ada isinya
       if (laporanSaya.length > 0) {
         document.getElementById("kosong").style.display = "none";
       }

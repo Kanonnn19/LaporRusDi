@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/style.css">
+  <title>Detail Laporan - LaporRusDi</title>
+  <style>
+    .detail-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 22px; align-items: start; }
+    .detail-title { font-size: clamp(26px, 4vw, 36px); font-weight: 800; line-height: 1.2; color: #151E32; }
+    .status-track { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 12px 0 20px; }
+    .status-track span { height: 5px; border-radius: 99px; background: #E2E8F0; }
+    .status-track span.on { background: #3B82F6; }
+    @media (max-width: 800px) { .detail-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-800">
+  <div id="navbar" data-active="laporan"></div>
+
+  <main class="page-public">
+    <a href="reports.html" class="link-blue" style="display:inline-block;margin-bottom:24px">&larr; Kembali ke daftar laporan</a>
+    <div id="detail-content"></div>
+  </main>
+
+  <div id="footer"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    var laporan = getReportById(getQueryParam("id"));
+    var pengguna = getCurrentUser();
+
+    function hitungDukungan() {
+      var data = getData(KEYS.supports);
+      var jumlah = 0;
+      for (var i = 0; i < data.length; i++) {
+        if (String(data[i].reportId) === String(laporan.id)) { jumlah++; }
+      }
+      return jumlah;
+    }
+    function sudahMendukung() {
+      if (pengguna === null) { return false; }
+      var data = getData(KEYS.supports);
+      for (var i = 0; i < data.length; i++) {
+        if (String(data[i].reportId) === String(laporan.id) && data[i].userId === pengguna.id) { return true; }
+      }
+      return false;
+    }
+    function ambilKomentar() {
+      var data = getData(KEYS.comments);
+      var hasil = [];
+      for (var i = 0; i < data.length; i++) {
+        if (String(data[i].reportId) === String(laporan.id)) { hasil.push(data[i]); }
+      }
+      return hasil.reverse();
+    }
+    function ambilRiwayat() {
+      var data = getData(KEYS.history);
+      var hasil = [];
+      for (var i = 0; i < data.length; i++) {
+        if (String(data[i].reportId) === String(laporan.id)) { hasil.push(data[i]); }
+      }
+      return hasil.reverse();
+    }
+
+    function tampilkan() {
+      var wadah = document.getElementById("detail-content");
+      if (laporan === null) {
+        wadah.innerHTML = '<div class="card empty-state"><h1 class="section-title">Laporan tidak ditemukan</h1>' +
+          '<p>Laporan mungkin sudah dihapus atau tautan tidak sesuai.</p>' +
+          '<a class="btn btn-primary" style="margin-top:20px" href="reports.html">Lihat daftar laporan</a></div>';
+        return;
+      }
+
+      var tahap = ["Menunggu", "Diverifikasi", "Diproses", "Selesai"];
+      var posisi = tahap.indexOf(laporan.status);
+      var ditolak = laporan.status === "Ditolak";
+      var track = "";
+      for (var t = 0; t < tahap.length; t++) {
+        track += '<span class="' + (!ditolak && t <= posisi ? "on" : "") + '"></span>';
+      }
+      var teknisi = getUserById(laporan.technicianId);
+      var pelapor = getUserById(laporan.userId);
+      var aksiHtml = "";
+      if (pengguna !== null && pengguna.role === "admin") {
+        aksiHtml = '<section class="card"><h2 class="section-title">Aksi admin</h2>' +
+          '<a class="btn btn-primary" style="width:100%" href="admin-reports.html?id=' + encodeURIComponent(laporan.id) + '">Kelola laporan ini</a></section>';
+      } else if (pengguna !== null && pengguna.role === "teknisi" && laporan.technicianId === pengguna.id) {
+        aksiHtml = '<section class="card"><h2 class="section-title">Tugas kamu</h2>' +
+          '<a class="btn btn-primary" style="width:100%" href="technician-task.html?id=' + encodeURIComponent(laporan.id) + '">Buka tugas perbaikan</a></section>';
+      }
+
+      var riwayatHtml = "";
+      var riwayat = ambilRiwayat();
+      for (var h = 0; h < riwayat.length; h++) {
+        riwayatHtml += '<div class="timeline-item"><span class="timeline-dot"></span><div>' +
+          '<p class="timeline-title">' + escapeHtml(riwayat[h].status) + '</p>' +
+          '<p class="timeline-note">' + escapeHtml(riwayat[h].note || "") + '</p>' +
+          '<p class="timeline-date">' + formatDate(riwayat[h].date) + '</p></div></div>';
+      }
+      if (riwayatHtml === "") { riwayatHtml = '<p class="muted">Belum ada riwayat.</p>'; }
+
+      var komentar = ambilKomentar();
+      var komentarHtml = "";
+      for (var c = 0; c < komentar.length; c++) {
+        komentarHtml += '<div class="comment-item"><div class="flex justify-between gap-3">' +
+          '<p class="font-bold text-sm">' + escapeHtml(komentar[c].author || "Pengguna kampus") + '</p>' +
+          '<span class="text-xs muted">' + formatDate(komentar[c].date) + '</span></div>' +
+          '<p class="text-sm" style="margin-top:6px;white-space:pre-wrap">' + escapeHtml(komentar[c].text || "") + '</p></div>';
+      }
+      if (komentarHtml === "") { komentarHtml = '<div class="empty-state" style="padding:20px">Belum ada komentar.</div>'; }
+
+      var catatanPerbaikan = laporan.repairNote
+        ? '<div class="info-row"><div><p class="info-label">Catatan perbaikan</p><p class="info-value">' + escapeHtml(laporan.repairNote) + '</p></div></div>' : "";
+
+      wadah.innerHTML =
+        '<div style="margin-bottom:24px"><div class="chip-row" style="margin-bottom:12px">' +
+          '<span class="type-chip">' + escapeHtml(laporan.category || "Lainnya") + '</span>' + statusBadge(laporan.status) +
+          (laporan.priority ? priorityBadge(laporan.priority) : "") +
+          '<span class="text-sm muted">Kode: ' + escapeHtml(laporan.id) + '</span></div>' +
+          '<h1 class="detail-title">' + escapeHtml(laporan.title) + '</h1>' +
+          '<p class="muted" style="margin-top:10px">Dilaporkan ' + formatDate(laporan.date) + '</p></div>' +
+
+        '<div class="detail-grid"><div class="stack">' +
+          '<section class="card"><h2 class="section-title">Deskripsi laporan</h2>' +
+            '<p style="line-height:1.75;color:#475569">' + escapeHtml(laporan.description || "Belum ada deskripsi.") + '</p>' +
+            '<div style="margin-top:16px">' +
+              '<div class="info-row"><div><p class="info-label">Lokasi</p><p class="info-value">' + escapeHtml(getReportLocation(laporan)) + '</p></div></div>' +
+              '<div class="info-row"><div><p class="info-label">Pelapor</p><p class="info-value">' + escapeHtml(pelapor !== null ? pelapor.name : (laporan.reporterName || "Pengguna kampus")) + '</p></div></div>' +
+              '<div class="info-row"><div><p class="info-label">Teknisi</p><p class="info-value">' + escapeHtml(teknisi !== null ? teknisi.name : "Belum ditugaskan") + '</p></div></div>' +
+              (laporan.adminNote ? '<div class="info-row"><div><p class="info-label">Catatan admin</p><p class="info-value">' + escapeHtml(laporan.adminNote) + '</p></div></div>' : "") +
+              catatanPerbaikan +
+            '</div></section>' +
+
+          '<section class="card"><div class="flex items-center justify-between gap-3"><h2 class="section-title" style="margin:0">Komentar</h2>' +
+            '<span class="type-chip">' + komentar.length + ' komentar</span></div>' +
+            '<form id="comment-form" style="margin-top:16px"><label for="comment-text" class="form-label">Tulis komentar</label>' +
+            '<textarea id="comment-text" class="form-input" rows="3" maxlength="500" placeholder="Tambahkan informasi yang membantu penanganan..."></textarea>' +
+            '<div style="text-align:right;margin-top:12px"><button class="btn btn-primary" type="submit">Kirim komentar</button></div></form>' +
+            '<div style="margin-top:12px">' + komentarHtml + '</div></section>' +
+        '</div>' +
+
+        '<aside class="stack">' + aksiHtml +
+          '<section class="card"><p class="text-sm muted">Dukungan pelapor lain</p>' +
+            '<p class="support-number" id="support-count">' + hitungDukungan() + '</p>' +
+            '<p class="text-sm muted">orang mengalami hal yang sama</p>' +
+            '<button id="support-button" class="btn btn-primary" style="width:100%;margin-top:16px"' + (sudahMendukung() ? " disabled" : "") + '>' +
+              (sudahMendukung() ? "Sudah kamu dukung" : "Dukung laporan ini") + '</button></section>' +
+          '<section class="card"><h2 class="section-title">Status laporan</h2>' +
+            (ditolak ? '<p class="muted" style="margin-bottom:16px">Laporan ini ditolak oleh admin.</p>' : '<div class="status-track">' + track + '</div>') +
+            riwayatHtml + '</section>' +
+        '</aside></div>';
+
+      document.getElementById("comment-form").addEventListener("submit", kirimKomentar);
+      document.getElementById("support-button").addEventListener("click", beriDukungan);
+    }
+
+    function kirimKomentar(e) {
+      e.preventDefault();
+      if (pengguna === null) { showToast("Masuk dulu untuk menulis komentar.", "error"); return; }
+      var teks = document.getElementById("comment-text").value.trim();
+      if (teks === "") { showToast("Komentar tidak boleh kosong.", "error"); return; }
+
+      var data = getData(KEYS.comments);
+      data.push({ id: generateId("c"), reportId: laporan.id, userId: pengguna.id, author: pengguna.name, text: teks, date: getToday() });
+      saveData(KEYS.comments, data);
+      if (laporan.userId && laporan.userId !== pengguna.id) {
+        addNotification(laporan.userId, "Komentar baru", pengguna.name + " berkomentar di " + laporan.id + ".", laporan.id);
+      }
+      tampilkan();
+      showToast("Komentar berhasil ditambahkan.", "success");
+    }
+
+    function beriDukungan() {
+      if (pengguna === null) { showToast("Masuk dulu untuk mendukung laporan.", "error"); return; }
+      if (sudahMendukung()) { showToast("Kamu sudah mendukung laporan ini.", "info"); return; }
+      var data = getData(KEYS.supports);
+      data.push({ reportId: laporan.id, userId: pengguna.id, date: getToday() });
+      saveData(KEYS.supports, data);
+      tampilkan();
+      showToast("Terima kasih sudah mendukung laporan ini.", "success");
+    }
+
+    tampilkan();
+  </script>
+</body>
+</html>
